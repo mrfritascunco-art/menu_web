@@ -51,7 +51,7 @@ main{max-width:900px;margin:auto;padding:15px 12px}.section{margin:14px 0 34px;s
 <body>
 <header><img class="brand-logo" src="logo.png.png" alt="Mr. Fritas Burger Co. Cunco Chile"><p>Smash burgers & papitas • Cunco</p></header>
 <div class="ticker" aria-label="Características de nuestros productos"><div class="ticker-track"><span>100% CARNE DE VACUNO</span><span>PAPAS FRITAS NATURALES</span><span>100% CARNE DE VACUNO</span><span>PAPAS FRITAS NATURALES</span><span>100% CARNE DE VACUNO</span><span>PAPAS FRITAS NATURALES</span><span>100% CARNE DE VACUNO</span><span>PAPAS FRITAS NATURALES</span></div></div>
-<div class="status"><div class="status-in" id="openStatus"></div></div><div class="share-menu"><button type="button" onclick="shareMenu()">📲 Compartir menú</button></div><nav id="nav"></nav><main id="menu"></main>
+<div class="status"><div class="status-in" id="openStatus"></div><div class="status-in open" id="tableStatus" style="display:none;margin-top:8px"></div></div><div class="share-menu"><button type="button" onclick="shareMenu()">📲 Compartir menú</button></div><nav id="nav"></nav><main id="menu"></main>
 <div class="custom-modal" id="customModal"><div class="custom-sheet"><button class="close" onclick="closeCustom()">×</button><h2 id="customName"></h2><div class="custom-sub" id="customDesc"></div><div id="removeOptions"></div><div id="extraOptions"></div><div id="specialOptions"></div><div id="upsellOptions"></div><div class="custom-total">Total: <span id="customTotal"></span></div><button class="custom-add" onclick="confirmCustom()">Agregar al pedido</button></div></div>
 <div class="bar"><div class="barin"><div><b id="count">0 productos</b><br><span id="mini">$0</span></div><div style="display:flex;gap:7px"><button class="cartbtn" id="repeatBtn" onclick="repeatLast()" style="display:none;background:#fff">↻ Repetir</button><button class="cartbtn" onclick="openCart()">Ver pedido 🛒</button></div></div></div>
 <div class="modal" id="modal"><div class="sheet"><button class="close" onclick="closeCart()">×</button><h2>Tu pedido</h2><div id="items"></div><div class="total">Total: <span id="total">$0</span></div>
@@ -84,6 +84,9 @@ const sections=[
 {name:"Promos",items:[["Combo para 2",17900,"2 smash clásicas + papas + salsas + 2 bebidas • Exclusivo consumo local"]]}
 ];
 let cart={},customerLocation="",customBase="",customData={},pendingUpsells=[]; const fmt=n=>"$"+n.toLocaleString("es-CL");
+const tableParam=new URLSearchParams(location.search).get("mesa");
+const tableNumber=/^[1-4]$/.test(tableParam||"")?tableParam:"";
+function tableMode(){if(!tableNumber)return;let s=document.getElementById("tableStatus");if(s){s.style.display="block";s.textContent="🍽️ PEDIDO EN LOCAL • MESA "+tableNumber}let delivery=document.querySelector('input[name="tipo"][value="Delivery"]');if(delivery){delivery.closest("label").style.display="none";let retiro=document.querySelector('input[name="tipo"][value="Retiro en local"]');retiro.checked=true}let addr=document.getElementById("address");if(addr)addr.style.display="none";let loc=document.getElementById("locationBox");if(loc)loc.style.display="none";let note=document.getElementById("deliveryNote");if(note)note.style.display="none"}
 const burgerExtras=[["Carne smash extra",2000],["Tocino crispy",1500],["Queso cheddar",1000],["Queso mantecoso",1000],["Champiñones",1000],["Cebolla caramelizada",800],["Cebolla morada",800],["Pepinillos",800],["Lechuga",800],["Tomate",800],["Palta",1500],["Cebolla",800],["Mayo casera",500],["Salsa BBQ",500],["Mostaza",0],["Ketchup",0]];
 const freeSauces=["Ketchup","Mostaza","BBQ","Ají"];
 const friesToppings=[["Carne mechada",2000],["Pollo",2000],["Tocino crispy",2500],["Salchichas",1500],["Queso fundido",1500],["Queso cheddar",1500],["Cebolla caramelizada",1000],["Pimentón",1000],["Champiñón",1000],["Choclo",1000],["Salsa premium",500]];
@@ -137,7 +140,7 @@ let msg=`🍟 *MR. FRITAS — NUEVO PEDIDO*
 🧾 *Pedido: ${orderNo}*
 ━━━━━━━━━━━━━━
 👤 *Cliente:* ${n}
-📦 *Entrega:* ${tipo}
+📦 *Entrega:* ${tableNumber?"Consumo en local — Mesa "+tableNumber:tipo}
 💳 *Pago:* ${pago}${cashInfo?" — "+cashInfo:""}
 `;
 if(tipo==="Delivery"&&a)msg+=`🏠 *Dirección:* ${a}\n`;if(tipo==="Delivery"&&customerLocation)msg+=`📍 *Ubicación:* ${customerLocation}\n`;
@@ -147,5 +150,5 @@ if(tipo==="Delivery"){t+=2000;msg+="🛵 Delivery radio urbano — "+fmt(2000)+"
 msg+="━━━━━━━━━━━━━━\n💰 *TOTAL: "+fmt(t)+"*";
 if(o)msg+="\n━━━━━━━━━━━━━━\n📝 *Observaciones:* "+o;
 localStorage.setItem("mrFritasLastCart",JSON.stringify({cart,customData}));repeatVisibility();window.open("https://wa.me/56988331113?text="+encodeURIComponent(msg),"_blank")}
-render();checkHours();update();repeatVisibility();setInterval(checkHours,60000);
+render();checkHours();update();repeatVisibility();tableMode();setInterval(checkHours,60000);
 </script></body></html>
