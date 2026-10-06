@@ -83,7 +83,8 @@ const sections=[
 ["Bebida en lata",2000,"Coca-Cola, Sprite, Fanta, Kem, Canada Dry o Limón Soda • Variedades sujetas a disponibilidad del día"]]},
 {name:"Promos",items:[["Combo para 2",17900,"2 smash clásicas + papas + salsas + 2 bebidas • Exclusivo consumo local"]]}
 ];
-let cart={},customerLocation="",customBase="",customData={},const burgerExtras=[["Carne smash extra",2000],["Tocino crispy",1500],["Queso cheddar",1000],["Queso mantecoso",1000],["Champiñones",1000],["Cebolla caramelizada",800],["Cebolla morada",800],["Pepinillos",800],["Lechuga",800],["Tomate",800],["Palta",1500],["Cebolla",800],["Mayo casera",500],["Salsa BBQ",500],["Mostaza",0],["Ketchup",0]];
+let cart={},customerLocation="",customBase="",customData={},pendingUpsells=[]; const fmt=n=>"$"+n.toLocaleString("es-CL");
+const burgerExtras=[["Carne smash extra",2000],["Tocino crispy",1500],["Queso cheddar",1000],["Queso mantecoso",1000],["Champiñones",1000],["Cebolla caramelizada",800],["Cebolla morada",800],["Pepinillos",800],["Lechuga",800],["Tomate",800],["Palta",1500],["Cebolla",800],["Mayo casera",500],["Salsa BBQ",500],["Mostaza",0],["Ketchup",0]];
 const freeSauces=["Ketchup","Mostaza","BBQ","Ají"];
 const friesToppings=[["Carne mechada",2000],["Pollo",2000],["Tocino crispy",2500],["Salchichas",1500],["Queso fundido",1500],["Queso cheddar",1500],["Cebolla caramelizada",1000],["Pimentón",1000],["Champiñón",1000],["Choclo",1000],["Salsa premium",500]];
 const drinkFlavors=["Coca-Cola","Sprite","Fanta","Kem","Canada Dry","Limón Soda"];
