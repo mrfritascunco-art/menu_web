@@ -132,8 +132,14 @@ if(!n)return alert("Escribe tu nombre para enviar el pedido.");
 if(tipo==="Delivery"&&!a&&!customerLocation)return alert("Para Delivery necesitamos tu dirección o tu ubicación actual 📍");
 let pago=document.querySelector('input[name="pago"]:checked')?.value||"Efectivo",cashInfo="";if(pago==="Efectivo"){let cambio=document.getElementById("cashChange").value,monto=document.getElementById("cashAmount").value.trim();if(cambio==="Necesito vuelto"&&!monto)return alert("Indica con cuánto vas a pagar para calcular el vuelto 💵");cashInfo=cambio==="Pago justo"?"Pago justo":("Necesita vuelto de $"+monto)}
 let orderNo=nextOrderNumber();
-let msg="🍟 *MR. FRITAS — NUEVO PEDIDO*\n🧾 *Pedido: "+orderNo+"*\n━━━━━━━━━━━━━━\n👤 *Cliente:* "+n+"\n📦 *Entrega:* "+tipo+"\n💳 *Pago:* "+pago+(cashInfo?" — "+cashInfo:"")+"\n";
-if(tipo==="Delivery"&&a)msg+="🏠 *Dirección:* "+a+"\n";if(tipo==="Delivery"&&customerLocation)msg+="📍 *Ubicación:* "+customerLocation+"\n";
+let msg=`🍟 *MR. FRITAS — NUEVO PEDIDO*
+🧾 *Pedido: ${orderNo}*
+━━━━━━━━━━━━━━
+👤 *Cliente:* ${n}
+📦 *Entrega:* ${tipo}
+💳 *Pago:* ${pago}${cashInfo?" — "+cashInfo:""}
+`;
+if(tipo==="Delivery"&&a)msg+=`🏠 *Dirección:* ${a}\n`;if(tipo==="Delivery"&&customerLocation)msg+=`📍 *Ubicación:* ${customerLocation}\n`;
 msg+="━━━━━━━━━━━━━━\n🧾 *PEDIDO*\n\n";
 Object.entries(cart).forEach(([id,q])=>{let p=cartProduct(id);t+=p[1]*q;msg+="*"+q+"× "+p[0]+"* — "+fmt(p[1]*q)+"\n";if(p[2]?.length)p[2].forEach(m=>msg+="   └ "+m+"\n");msg+="\n"});
 if(tipo==="Delivery"){t+=2000;msg+="🛵 Delivery radio urbano — "+fmt(2000)+"\n\n"}
