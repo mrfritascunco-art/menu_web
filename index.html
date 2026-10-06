@@ -74,7 +74,7 @@ const sections=[
 ["Smash Clásica",6900,"Carne smash, queso cheddar, cebolla morada, pepinillos, mayonesa • Incluye papitas","clasica.jpg"],
 ["Smash Doble",8900,"Doble carne smash, doble queso cheddar, cebolla morada, pepinillos, mayo casera",""]]},
 {name:"Arma tu Smash",items:[["Base Smash",5500,"Pan brioche, carne smash y mayo casera • Incluye papas fritas"]]},
-{name:"Papas & Toppings",items:[["Papas fritas base",3000,"Papas fritas naturales • tamaño base"],["Papas fritas grande",5000,"Papas fritas naturales • tamaño grande"],["Carne mechada",2000,"Topping"],["Pollo",2000,"Topping"],["Tocino crispy",2500,"Topping"],["Salchichas",1500,"Topping"],["Queso fundido",1500,"Topping"],["Queso cheddar",1500,"Topping"],["Cebolla caramelizada",1000,"Topping"],["Pimentón",1000,"Topping"],["Champiñón",1000,"Topping"],["Choclo",1000,"Topping"],["Salsa premium",500,"Mayo casera, mayo ajo, mayo cilantro, salsa de queso, choclo o tocino"]]},
+{name:"Papas & Toppings",items:[["Arma tus Papas Base",3000,"Papas fritas naturales • tamaño base • Toppings sujetos a disponibilidad del día"],["Arma tus Papas Grande",5000,"Papas fritas naturales • tamaño grande • Toppings sujetos a disponibilidad del día"]]},
 {name:"Snacks",items:[
 ["6 Empanadas de queso",2500,"6 empanadas de queso tipo cocktail"],
 ["4 Nuggets de pollo",2500,"4 nuggets de pollo"],
@@ -86,6 +86,7 @@ const sections=[
 let cart={},customerLocation="",customBase="",customData={}; const fmt=n=>"$"+n.toLocaleString("es-CL");
 const burgerExtras=[["Carne smash extra",2000],["Tocino crispy",1500],["Queso cheddar",1000],["Queso mantecoso",1000],["Champiñones",1000],["Cebolla caramelizada",800],["Cebolla morada",800],["Pepinillos",800],["Lechuga",800],["Tomate",800],["Palta",1500],["Cebolla",800],["Mayo casera",500],["Salsa BBQ",500],["Mostaza",0],["Ketchup",0]];
 const freeSauces=["Ketchup","Mostaza","BBQ","Ají"];
+const friesToppings=[["Carne mechada",2000],["Pollo",2000],["Tocino crispy",2500],["Salchichas",1500],["Queso fundido",1500],["Queso cheddar",1500],["Cebolla caramelizada",1000],["Pimentón",1000],["Champiñón",1000],["Choclo",1000],["Salsa premium",500]];
 const drinkFlavors=["Coca-Cola","Sprite","Fanta","Kem","Canada Dry","Limón Soda"];
 function checkHours(){let d=new Date(),h=d.getHours(),open=h>=18;let el=document.getElementById("openStatus");el.className="status-in "+(open?"open":"closed");el.textContent=open?"🟢 ESTAMOS ATENDIENDO • HASTA LAS 00:00 HRS":"🔴 CERRADO • ABRIMOS A LAS 18:00 HRS"}
 function baseProduct(id){let [a,b]=id.split("-").map(Number);return sections[a].items[b]}
@@ -105,7 +106,7 @@ function render(){const nav=document.getElementById("nav"),m=document.getElement
 sections.forEach((s,si)=>{let b=document.createElement("button");b.textContent=s.name;b.onclick=()=>document.getElementById("s"+si).scrollIntoView({behavior:"smooth"});if(!si)b.className="active";nav.appendChild(b);
 let sec=document.createElement("section");sec.className="section";sec.id="s"+si;sec.innerHTML="<h2>"+s.name+"</h2><div class='grid'></div>";let g=sec.querySelector(".grid");
 s.items.forEach((p,pi)=>{let id=si+"-"+pi,d=document.createElement("div");d.className="card";let badges={"Mr ¼ de Kilo":"💪 Solo para valientes","Oklahoma Burger":"🇺🇸 La más americana de Cunco","Smash Peanut":"🥜 La rara que todos quieren","Smash Clásica":"⭐ La que no falla"},badge=badges[p[0]]?"<span class='badge'>"+badges[p[0]]+"</span>":"";d.innerHTML="<div class='pic'>"+(p[3]?"<img src=\'"+p[3]+"\' alt=\'"+p[0]+"\' loading=\'lazy\'>":(si===2?"🍟":"🍔"))+"</div><div class='info'><h3>"+p[0]+"</h3><div class='desc'>"+p[2]+"</div><div class='row'><span class='price'>"+fmt(p[1])+"</span><button class='add' onclick=\"add('"+id+"')\">+</button></div></div>";g.appendChild(d)});m.appendChild(sec)})}
-function product(id){return baseProduct(id.split("|")[0])}function add(id){let p=baseProduct(id),si=Number(id.split("-")[0]);if(si===0||p[0]==="Base Smash"||p[0]==="Bebida en lata"||(si===2&&/Papas fritas/.test(p[0])))return openCustom(id);cart[id]=(cart[id]||0)+1;update()}
+function product(id){return baseProduct(id.split("|")[0])}function add(id){let p=baseProduct(id),si=Number(id.split("-")[0]);if(si===0||p[0]==="Base Smash"||p[0]==="Bebida en lata"||(si===2&&/Arma tus Papas/.test(p[0])))return openCustom(id);cart[id]=(cart[id]||0)+1;update()}
 function change(id,n){cart[id]=(cart[id]||0)+n;if(cart[id]<=0){delete cart[id];delete customData[id]}drawCart();update()}
 function update(){let c=0,t=0;Object.entries(cart).forEach(([id,q])=>{let p=cartProduct(id);c+=q;t+=p[1]*q});document.getElementById("count").textContent=c+" producto"+(c===1?"":"s");document.getElementById("mini").textContent=fmt(t)}
 function openCart(){deliveryMode();document.getElementById("modal").classList.add("show")}function closeCart(){document.getElementById("modal").classList.remove("show")}
