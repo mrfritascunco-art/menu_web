@@ -7,7 +7,7 @@
 :root{--y:#ffc400;--k:#0b0b0b;--w:#fff;--g:#f2f1ed;--muted:#777}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--g);color:#151515;padding-bottom:92px}
 header{background:linear-gradient(145deg,#080808,#1a1a1a);color:#fff;padding:30px 16px 25px;text-align:center;border-bottom:5px solid var(--y)}
-header h1{margin:0;font-size:40px;font-weight:1000;letter-spacing:-2px;font-style:italic}header h1 span{color:var(--y)}
+header h1{margin:0}.brand-logo{display:block;width:min(330px,78vw);height:auto;margin:0 auto;filter:drop-shadow(0 8px 16px #0008)}
 header p{margin:7px 0 0;color:#ddd;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:1.2px}
 nav{display:flex;gap:8px;overflow:auto;padding:11px 12px;position:sticky;top:0;background:#fff;z-index:4;box-shadow:0 4px 14px #00000012;scrollbar-width:none}
 nav::-webkit-scrollbar{display:none}nav button{white-space:nowrap;border:1px solid #e6e6e6;border-radius:999px;background:#fff;padding:10px 15px;font-weight:900;cursor:pointer}nav button.active,nav button:hover{background:var(--y);border-color:var(--y)}
@@ -22,11 +22,11 @@ main{max-width:900px;margin:auto;padding:15px 12px}.section{margin:14px 0 34px;s
 .item{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #e6e6e6;padding:12px 0}.qty button{border:0;background:#eee;border-radius:8px;width:31px;height:31px;font-weight:900}.total{font-size:24px;font-weight:1000;text-align:right;margin:18px 0}
 .field{width:100%;padding:13px;border:1px solid #d5d5d5;border-radius:11px;margin:6px 0 10px;font-size:16px}.types{display:flex;gap:8px}.types label{flex:1;background:#eee;border-radius:11px;padding:12px;text-align:center;font-weight:800}.whatsapp{width:100%;background:#25d366;color:#fff;border:0;border-radius:13px;padding:16px;font-size:17px;font-weight:1000;cursor:pointer}.close{float:right;border:0;background:#eee;border-radius:50%;width:36px;height:36px;font-size:20px}
 @media(max-width:390px){.pic{height:145px}.info{padding:11px}.info h3{font-size:15px}.desc{font-size:11.5px}.price{font-size:18px}}
-@media(min-width:650px){.grid{grid-template-columns:repeat(3,1fr)}.pic{height:190px}header{padding:38px 16px 30px}header h1{font-size:48px}}
+@media(min-width:650px){.grid{grid-template-columns:repeat(3,1fr)}.pic{height:190px}header{padding:30px 16px 24px}.brand-logo{width:370px}}
 </style>
 </head>
 <body>
-<header><h1>MR. <span>FRITAS</span></h1><p>Smash burgers & papitas • Cunco</p></header>
+<header><img class="brand-logo" src="logo.png.png" alt="Mr. Fritas Burger Co. Cunco Chile"><p>Smash burgers & papitas • Cunco</p></header>
 <nav id="nav"></nav><main id="menu"></main>
 <div class="bar"><div class="barin"><div><b id="count">0 productos</b><br><span id="mini">$0</span></div><button class="cartbtn" onclick="openCart()">Ver pedido 🛒</button></div></div>
 <div class="modal" id="modal"><div class="sheet"><button class="close" onclick="closeCart()">×</button><h2>Tu pedido</h2><div id="items"></div><div class="total">Total: <span id="total">$0</span></div>
