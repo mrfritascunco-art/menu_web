@@ -84,7 +84,7 @@ const sections=[
 {name:"Promos",items:[["Combo para 2",17900,"2 smash clásicas + papas + salsas + 2 bebidas • Exclusivo consumo local"]]}
 ];
 let cart={},customerLocation="",customBase="",customData={}; const fmt=n=>"$"+n.toLocaleString("es-CL");
-const burgerExtras=[["Carne smash extra",2000],["Tocino crispy",1500],["Queso cheddar",1000],["Queso mantecoso",1000],["Champiñones",1000],["Cebolla caramelizada",800],["Cebolla morada",800],["Pepinillos",800]];
+const burgerExtras=[["Carne smash extra",2000],["Tocino crispy",1500],["Queso cheddar",1000],["Queso mantecoso",1000],["Champiñones",1000],["Cebolla caramelizada",800],["Cebolla morada",800],["Pepinillos",800],["Lechuga",800],["Tomate",800],["Palta",1500],["Cebolla",800],["Mayo casera",500],["Salsa BBQ",500],["Mostaza",0],["Ketchup",0]];
 const freeSauces=["Ketchup","Mostaza","BBQ","Ají"];
 const drinkFlavors=["Coca-Cola","Sprite","Fanta","Kem","Canada Dry","Limón Soda"];
 function checkHours(){let d=new Date(),h=d.getHours(),open=h>=18;let el=document.getElementById("openStatus");el.className="status-in "+(open?"open":"closed");el.textContent=open?"🟢 ESTAMOS ATENDIENDO • HASTA LAS 00:00 HRS":"🔴 CERRADO • ABRIMOS A LAS 18:00 HRS"}
