@@ -23,5 +23,6 @@ function renderOrders(rows){$("orderCount").textContent=rows.length;if(!rows.len
 async function loadOrders(){const m=$("statusMsg");m.textContent="Actualizando…";try{const rows=await api("/rest/v1/orders?select=*&status=in.(nuevo,preparando,listo,en_reparto)&order=created_at.desc");renderOrders(rows);m.textContent="✅ Pedidos actualizados"}catch(e){$("orders").innerHTML='<div class="empty">No se pudieron cargar los pedidos.</div>';m.textContent="❌ Error al cargar"}}
 async function setStatus(id,status){const m=$("statusMsg");m.textContent="Guardando estado…";try{await api("/rest/v1/orders?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:status,updated_at:new Date().toISOString()})});m.textContent="✅ Estado actualizado";await loadOrders()}catch(e){m.textContent="❌ No se pudo cambiar el estado"}}
 $("loginBtn").addEventListener("click",login);$("logoutBtn").addEventListener("click",logout);$("orders").addEventListener("click",function(e){const b=e.target.closest("[data-order]");if(b)setStatus(b.dataset.order,b.dataset.status)});
+setInterval(()=>{if(token)loadOrders()},5000);
 (async()=>{token=sessionStorage.getItem("mf_kitchen_token")||"";if(token){showKitchen();await loadOrders()}})();
 </script></body></html>
