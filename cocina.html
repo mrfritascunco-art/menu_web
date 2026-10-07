@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mr. Fritas | Cocina</title>
+<style>
+:root{--y:#ffc400;--k:#111;--g:#f2f1ed;--red:#b42318;--green:#16794b}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--g);color:#111}header{background:#111;color:#fff;text-align:center;padding:20px 16px;border-bottom:5px solid var(--y)}header img{width:min(220px,65vw)}header b{display:block;margin-top:7px;font-size:18px}main{max-width:720px;margin:auto;padding:16px}.box{background:#fff;border-radius:18px;padding:18px;box-shadow:0 5px 18px #0001;margin-bottom:16px}.field{width:100%;padding:14px;border:1px solid #ccc;border-radius:11px;margin:6px 0;font-size:16px}.btn{width:100%;border:0;border-radius:11px;padding:14px;font-weight:900;font-size:16px;cursor:pointer;background:var(--y)}.logout{background:#111;color:#fff;margin-top:12px}.hidden{display:none}.msg{font-size:13px;color:#666;margin-top:9px}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.top h2{margin:0}.count{background:var(--y);padding:7px 10px;border-radius:999px;font-weight:900}.order{border:2px solid #ddd;border-radius:16px;padding:15px;margin:12px 0;background:#fff}.order.nuevo{border-color:var(--y)}.order h3{margin:0 0 6px;font-size:22px}.meta{font-weight:800;margin-bottom:10px}.items{background:#f7f7f7;border-radius:11px;padding:10px;margin:9px 0}.item{padding:4px 0}.note{padding:9px;background:#fff3cd;border-radius:9px;margin-top:8px}.total{font-size:20px;font-weight:1000;margin-top:10px}.status{display:inline-block;border-radius:999px;padding:7px 10px;font-weight:900;font-size:13px;background:#eee}.status.nuevo{background:#fff1b8}.status.preparando{background:#ffe1c2}.status.listo{background:#dff7e7;color:#12652e}.empty{text-align:center;padding:30px 10px;color:#666;font-weight:800}
+</style>
+</head>
+<body>
+<header><img src="logo.png.png" alt="Mr. Fritas"><b>🔥 PANEL DE COCINA</b></header>
+<main>
+<section class="box" id="loginBox">
+<h2>🔐 Ingresar a cocina</h2>
+<input class="field" id="email" type="email" placeholder="Correo">
+<input class="field" id="password" type="password" placeholder="Contraseña">
+<button class="btn" id="loginBtn" type="button">Entrar</button>
+<div class="msg" id="loginMsg"></div>
+</section>
+<section class="box hidden" id="kitchenBox">
+<div class="top"><h2>Pedidos</h2><span class="count" id="orderCount">0</span></div>
+<div id="orders"><div class="empty">Cargando pedidos…</div></div>
+<button class="btn logout" id="logoutBtn" type="button">Cerrar sesión</button>
+<div class="msg" id="statusMsg"></div>
+</section>
+</main>
+<script>
+const SUPABASE_URL="https://oiybkvtamrhjfcyfayes.supabase.co";
+const SUPABASE_KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
+let token="";
+const $=id=>document.getElementById(id);
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+function money(n){return "$"+Number(n||0).toLocaleString("es-CL")}
+async function api(path,opt={}){const headers={apikey:SUPABASE_KEY,"Content-Type":"application/json",...(opt.headers||{})};if(token)headers.Authorization="Bearer "+token;const r=await fetch(SUPABASE_URL+path,{...opt,headers});if(!r.ok)throw new Error(await r.text());return r.status===204?null:r.json()}
+function showKitchen(){$("loginBox").classList.add("hidden");$("kitchenBox").classList.remove("hidden")}
+function showLogin(){$("kitchenBox").classList.add("hidden");$("loginBox").classList.remove("hidden")}
+async function login(){const m=$("loginMsg");m.textContent="Ingresando…";try{const r=await api("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email:$("email").value.trim(),password:$("password").value})});token=r.access_token;sessionStorage.setItem("mf_kitchen_token",token);showKitchen();await loadOrders()}catch(e){m.textContent="No se pudo ingresar. Revisa correo y contraseña."}}
+function logout(){sessionStorage.removeItem("mf_kitchen_token");token="";showLogin()}
+function itemText(item){const qty=item.quantity??item.qty??1;const name=item.name??item.nombre??"Producto";return '<div class="item"><b>'+esc(qty)+'×</b> '+esc(name)+'</div>'}
+function renderOrders(rows){$("orderCount").textContent=rows.length;if(!rows.length){$("orders").innerHTML='<div class="empty">No hay pedidos pendientes 👌</div>';return}$("orders").innerHTML=rows.map(r=>{const items=Array.isArray(r.items)?r.items:[];const time=new Date(r.created_at).toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});return '<article class="order '+esc(r.status)+'"><h3>Pedido #'+esc(r.order_number)+'</h3><div class="meta">'+esc(time)+' · '+esc(r.order_type)+'</div><span class="status '+esc(r.status)+'">'+esc(String(r.status).toUpperCase())+'</span><div class="items">'+items.map(itemText).join("")+'</div>'+(r.notes?'<div class="note">📝 '+esc(r.notes)+'</div>':'')+'<div class="total">Total '+money(r.total)+'</div></article>'}).join("")}
+async function loadOrders(){const m=$("statusMsg");m.textContent="Actualizando…";try{const rows=await api("/rest/v1/orders?select=*&status=in.(nuevo,preparando,listo)&order=created_at.desc");renderOrders(rows);m.textContent="✅ Pedidos actualizados"}catch(e){$("orders").innerHTML='<div class="empty">No se pudieron cargar los pedidos.</div>';m.textContent="❌ Error al cargar"}}
+$("loginBtn").addEventListener("click",login);$("logoutBtn").addEventListener("click",logout);
+(async()=>{token=sessionStorage.getItem("mf_kitchen_token")||"";if(token){showKitchen();await loadOrders()}})();
+</script>
+</body>
+</html>
