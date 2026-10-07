@@ -127,19 +127,19 @@ function applyMenuControl(){document.querySelectorAll(".card[data-product-id]").
 async function loadMenuControl(){
  let headers={apikey:MENU_KEY},noCache={headers,cache:"no-store"};
  try{
-  let r=await fetch(MENU_API+"&_="+Date.now(),noCache);
+  let r=await fetch(MENU_API,noCache);
   if(r.ok){let rows=await r.json();menuControl={};rows.forEach(x=>{menuControl[x.product_id]=x;if(x.price!==null&&Number.isFinite(Number(x.price))){let p=x.product_id.split("-").map(Number);if(sections[p[0]]&&sections[p[0]].items[p[1]])sections[p[0]].items[p[1]][1]=Number(x.price)}})}
  }catch(e){}
  try{
-  let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_extras?select=id,name,price,available&_="+Date.now(),noCache);
+  let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_extras?select=id,name,price,available",noCache);
   if(r.ok){let data=await r.json(),by={};data.forEach(x=>by[x.name]=x);burgerExtras=burgerExtras.map(x=>{let s=by[x[0]];return s?[x[0],Number(s.price),s.available]:x})}
  }catch(e){}
  try{
-  let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_papas_extras?select=id,name,price,available&_="+Date.now(),noCache);
+  let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_papas_extras?select=id,name,price,available",noCache);
   if(r.ok){let data=await r.json(),by={};data.forEach(x=>by[x.name]=x);friesToppings=friesToppings.map(x=>{let s=by[x[0]];return s?[x[0],Number(s.price),s.available]:x})}
  }catch(e){}
  try{
-  let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_sauces?select=id,name,available&_="+Date.now(),noCache);
+  let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_sauces?select=id,name,available",noCache);
   if(r.ok){let data=await r.json(),by={};data.forEach(x=>by[x.name]=x);freeSauces=freeSauces.filter(x=>!by[x]||by[x].available);["Ketchup","Mostaza"].forEach(n=>{let s=by[n],i=burgerExtras.findIndex(x=>x[0]===n);if(i>=0&&s)burgerExtras[i][2]=s.available})}
  }catch(e){}
  render();applyMenuControl();
