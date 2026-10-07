@@ -124,26 +124,26 @@ sections.forEach((s,si)=>{let b=document.createElement("button");b.textContent=s
 let sec=document.createElement("section");sec.className="section";sec.id="s"+si;sec.innerHTML="<h2>"+s.name+"</h2><div class='grid'></div>";let g=sec.querySelector(".grid");
 s.items.forEach((p,pi)=>{let id=si+"-"+pi,d=document.createElement("div");d.className="card";d.dataset.productId=id;let badges={"Mr ¼ de Kilo":"💪 Solo para valientes","Oklahoma Burger":"🇺🇸 La más americana de Cunco","Smash Peanut":"🥜 La rara que todos quieren","Smash Clásica":"⭐ La que no falla"},badge=badges[p[0]]?"<span class='badge'>"+badges[p[0]]+"</span>":"";d.innerHTML="<div class='pic'>"+(p[3]?"<img src=\'"+p[3]+"\' alt=\'"+p[0]+"\' loading=\'lazy\'>":(si===2?"🍟":"🍔"))+"</div><div class='info'><h3>"+p[0]+"</h3><div class='desc'>"+p[2]+"</div><div class='row'><span class='price'>"+fmt(p[1])+"</span><button class='add' onclick=\"add('"+id+"')\">+</button></div></div>";g.appendChild(d)});m.appendChild(sec)})}
 function applyMenuControl(){document.querySelectorAll(".card[data-product-id]").forEach(card=>{let id=card.dataset.productId,s=menuControl[id];if(!s)return;card.classList.toggle("soldout",s.available===false);let btn=card.querySelector(".add");if(btn){btn.disabled=s.available===false;btn.textContent=s.available===false?"×":"+"}let info=card.querySelector(".info"),old=card.querySelector(".featured-badge");if(s.featured&&!old){let tag=document.createElement("span");tag.className="featured-badge";tag.textContent="🔥 Más pedidos";info.insertBefore(tag,info.firstChild)}else if(!s.featured&&old)old.remove()})}
-async function loadMenuControl(){try{
-let headers={apikey:MENU_KEY};
-let [mr,er,pr,sr]=await Promise.all([
- fetch(MENU_API,{headers}),
- fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_extras?select=id,name,price,available",{headers}),
- fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_papas_extras?select=id,name,price,available",{headers}),
- fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_sauces?select=id,name,available",{headers})
-]);
-if(!mr.ok||!er.ok||!pr.ok||!sr.ok)return;
-let rows=await mr.json(),extras=await er.json(),papas=await pr.json(),sauces=await sr.json();
-menuControl={};rows.forEach(x=>{menuControl[x.product_id]=x;if(Number.isFinite(Number(x.price))){let parts=x.product_id.split("-").map(Number);if(sections[parts[0]]&&sections[parts[0]].items[parts[1]])sections[parts[0]].items[parts[1]][1]=Number(x.price)}});
-let extraByName={};extras.forEach(x=>extraByName[x.name]=x);
-burgerExtras=burgerExtras.map(x=>{let s=extraByName[x[0]];return s?[x[0],Number(s.price),s.available]:[x[0],x[1],true]});
-let papasByName={};papas.forEach(x=>papasByName[x.name]=x);
-friesToppings=friesToppings.map(x=>{let s=papasByName[x[0]];return s?[x[0],Number(s.price),s.available]:[x[0],x[1],true]});
-let sauceByName={};sauces.forEach(x=>sauceByName[x.name]=x);
-freeSauces=freeSauces.filter(x=>!sauceByName[x]||sauceByName[x].available);
-["Ketchup","Mostaza"].forEach(n=>{let s=sauceByName[n],i=burgerExtras.findIndex(x=>x[0]===n);if(i>=0&&s)burgerExtras[i][2]=s.available});
-render();applyMenuControl();
-}catch(e){}}
+async function loadMenuControl(){
+ let headers={apikey:MENU_KEY},noCache={headers,cache:"no-store"};
+ try{
+  let r=await fetch(MENU_API+"&_="+Date.now(),noCache);
+  if(r.ok){let rows=await r.json();menuControl={};rows.forEach(x=>{menuControl[x.product_id]=x;if(x.price!==null&&Number.isFinite(Number(x.price))){let p=x.product_id.split("-").map(Number);if(sections[p[0]]&&sections[p[0]].items[p[1]])sections[p[0]].items[p[1]][1]=Number(x.price)}})}
+ }catch(e){}
+ try{
+  let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_extras?select=id,name,price,available&_="+Date.now(),noCache);
+  if(r.ok){let data=await r.json(),by={};data.forEach(x=>by[x.name]=x);burgerExtras=burgerExtras.map(x=>{let s=by[x[0]];return s?[x[0],Number(s.price),s.available]:x})}
+ }catch(e){}
+ try{
+  let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_papas_extras?select=id,name,price,available&_="+Date.now(),noCache);
+  if(r.ok){let data=await r.json(),by={};data.forEach(x=>by[x.name]=x);friesToppings=friesToppings.map(x=>{let s=by[x[0]];return s?[x[0],Number(s.price),s.available]:x})}
+ }catch(e){}
+ try{
+  let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_sauces?select=id,name,available&_="+Date.now(),noCache);
+  if(r.ok){let data=await r.json(),by={};data.forEach(x=>by[x.name]=x);freeSauces=freeSauces.filter(x=>!by[x]||by[x].available);["Ketchup","Mostaza"].forEach(n=>{let s=by[n],i=burgerExtras.findIndex(x=>x[0]===n);if(i>=0&&s)burgerExtras[i][2]=s.available})}
+ }catch(e){}
+ render();applyMenuControl();
+}
 function product(id){return baseProduct(id.split("|")[0])}function add(id){if(menuControl[id]?.available===false)return alert("Este producto está agotado por ahora 🚫");let p=baseProduct(id),si=Number(id.split("-")[0]);if(si===0||p[0]==="Base Smash"||p[0]==="Bebida en lata"||(si===2&&/Arma tus Papas/.test(p[0]))||si===3||si===5)return openCustom(id);cart[id]=(cart[id]||0)+1;update()}
 function change(id,n){cart[id]=(cart[id]||0)+n;if(cart[id]<=0){delete cart[id];delete customData[id]}drawCart();update()}
 function update(){let c=0,t=0;Object.entries(cart).forEach(([id,q])=>{let p=cartProduct(id);c+=q;t+=p[1]*q});document.getElementById("count").textContent=c+" producto"+(c===1?"":"s");document.getElementById("mini").textContent=fmt(t)}
