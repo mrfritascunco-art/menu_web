@@ -204,10 +204,11 @@ async function registerKitchenOrder(data){
       console.error("No se pudo registrar pedido en cocina",await r.text());
       return false;
     }
-    return true;
+    const rows=await r.json();
+    return Array.isArray(rows)?rows[0]||null:rows;
   }catch(e){
     console.error("Error registrando pedido en cocina",e);
-    return false;
+    return null;
   }
 }
 function sendWA(){if(!Object.keys(cart).length)return alert("Agrega productos primero");let tipo=document.querySelector('input[name="tipo"]:checked').value,n=document.getElementById("name").value.trim(),a=document.getElementById("address").value.trim(),o=document.getElementById("obs").value,t=0;
@@ -228,7 +229,7 @@ Object.entries(cart).forEach(([id,q])=>{let p=cartProduct(id);t+=p[1]*q;msg+="*"
 if(tipo==="Delivery"){t+=2000;msg+="🛵 Delivery radio urbano — "+fmt(2000)+"\n\n"}
 msg+="━━━━━━━━━━━━━━\n💰 *TOTAL: "+fmt(t)+"*";
 if(o)msg+="\n━━━━━━━━━━━━━━\n📝 *Observaciones:* "+o;
-localStorage.setItem("mrFritasLastCart",JSON.stringify({cart,customData}));repeatVisibility();if(tableNumber){let b=document.getElementById("moreOrderBtn");if(b)b.style.display="block"}window.open("https://wa.me/56988331113?text="+encodeURIComponent(msg),"_blank");let kitchenItems=Object.entries(cart).map(([id,q])=>{let p=cartProduct(id);return {name:p[0],quantity:q,price:p[1],details:Array.isArray(p[2])?p[2]:[]}});registerKitchenOrder({customer_name:n,order_type:tableNumber?"Consumo en local":tipo,table_number:tableNumber?Number(tableNumber):null,address:tipo==="Delivery"?a:null,location_url:tipo==="Delivery"?customerLocation:null,items:kitchenItems,notes:o||null,payment_method:pago+(cashInfo?" — "+cashInfo:""),total:t,status:"nuevo"});showSent(orderNo)}
+localStorage.setItem("mrFritasLastCart",JSON.stringify({cart,customData}));repeatVisibility();if(tableNumber){let b=document.getElementById("moreOrderBtn");if(b)b.style.display="block"}window.open("https://wa.me/56988331113?text="+encodeURIComponent(msg),"_blank");let kitchenItems=Object.entries(cart).map(([id,q])=>{let p=cartProduct(id);return {name:p[0],quantity:q,price:p[1],details:Array.isArray(p[2])?p[2]:[]}});showSent(orderNo);registerKitchenOrder({customer_name:n,order_type:tableNumber?"Consumo en local":tipo,table_number:tableNumber?Number(tableNumber):null,address:tipo==="Delivery"?a:null,location_url:tipo==="Delivery"?customerLocation:null,items:kitchenItems,notes:o||null,payment_method:pago+(cashInfo?" — "+cashInfo:""),total:t,status:"nuevo"}).then(result=>{if(!result?.tracking_token)return;const link=new URL("seguimiento.html",location.href);link.searchParams.set("token",result.tracking_token);localStorage.setItem("mrFritasLastTracking",link.href);const btn=document.getElementById("trackOrderBtn");btn.href=link.href;btn.style.display="block";const st=document.getElementById("sentText");st.insertAdjacentHTML("beforeend","<br><br>📍 <b>Ya puedes seguir el estado de tu pedido aquí.</b>")})}
 let flashPromo=null,flashTimer=null,flashAutoClose=null;
 function closeFlashPopup(){document.getElementById("flashPopup").classList.remove("show");if(flashAutoClose){clearTimeout(flashAutoClose);flashAutoClose=null}}
 function refreshFlashClock(){if(!flashPromo)return;let remaining=new Date(flashPromo.ends_at).getTime()-Date.now();if(remaining<=0){flashPromo=null;closeFlashPopup();if(flashTimer){clearInterval(flashTimer);flashTimer=null}return}let seconds=Math.ceil(remaining/1000);document.getElementById("flashPopupClock").textContent=String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")}
