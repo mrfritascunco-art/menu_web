@@ -253,4 +253,19 @@ function closeFlashPopup(){document.getElementById("flashPopup").classList.remov
 function refreshFlashClock(){if(!flashPromo)return;let remaining=new Date(flashPromo.ends_at).getTime()-Date.now();if(remaining<=0){flashPromo=null;closeFlashPopup();if(flashTimer){clearInterval(flashTimer);flashTimer=null}return}let seconds=Math.ceil(remaining/1000);document.getElementById("flashPopupClock").textContent=String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")}
 async function loadFlashPopup(){try{let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_flash_promos?select=gift_text,active,starts_at,ends_at&id=eq.1",{headers:{apikey:MENU_KEY},cache:"no-store"});if(!r.ok)return;let a=(await r.json())[0];if(!a||!a.active||!a.gift_text||!a.ends_at||new Date(a.ends_at).getTime()<=Date.now()||new Date(a.starts_at).getTime()>Date.now())return;flashPromo=a;document.getElementById("flashPopupGift").textContent="🎁 "+a.gift_text;refreshFlashClock();document.getElementById("flashPopup").classList.add("show");flashTimer=setInterval(refreshFlashClock,1000);flashAutoClose=setTimeout(closeFlashPopup,10000)}catch(e){console.warn("Promo relámpago no disponible",e)}}
 render();loadMenuPromotions();loadMenuControl();loadSpecialAnnouncement();loadFlashPopup();checkHours();update();repeatVisibility();tableMode();setInterval(checkHours,1000);setTimeout(showRepeatPop,700);
+</script><script>
+(function(){
+  const key="mrFritasTestDevice";
+  function render(){
+    let bar=document.getElementById("mfTestBanner");
+    const active=localStorage.getItem(key)==="yes";
+    if(!bar){bar=document.createElement("div");bar.id="mfTestBanner";document.body.appendChild(bar)}
+    bar.style.cssText="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#111;color:#ffc400;padding:12px;text-align:center;font:bold 14px Arial;box-shadow:0 4px 12px #0008;display:"+(active?"block":"none");
+    bar.innerHTML='🧪 MODO PRUEBAS ACTIVO — pedidos no se suman a ventas <button id="mfTestToggle" style="margin-left:10px;background:#ffc400;color:#111;border:0;border-radius:8px;padding:8px;font-weight:bold">Desactivar</button>';
+    bar.querySelector("button").onclick=function(){localStorage.setItem(key,"no");render()};
+  }
+  const u=new URL(location.href);
+  if(u.searchParams.get("modo")==="pruebas"){localStorage.setItem(key,"yes");u.searchParams.delete("modo");history.replaceState(null,"",u.pathname+u.search+u.hash)}
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render);else render();
+})();
 </script></body></html>
