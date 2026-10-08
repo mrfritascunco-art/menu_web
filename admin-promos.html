@@ -13,7 +13,7 @@
 const SUPABASE_URL="https://oiybkvtamrhjfcyfayes.supabase.co";
 const SUPABASE_KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
 let token="",rows=[],extraRows=[],papasRows=[],sauceRows=[];
-async function api(path,opt={}){let h={"apikey":SUPABASE_KEY,"Content-Type":"application/json",...(opt.headers||{})};if(token)h.Authorization="Bearer "+token;let r=await fetch(SUPABASE_URL+path,{...opt,headers:h});if(!r.ok)throw new Error(await r.text());return r.status===204?null:r.json()}
+async function api(path,opt={}){let h={"apikey":SUPABASE_KEY,"Content-Type":"application/json",...(opt.headers||{})};if(token)h.Authorization="Bearer "+token;let r=await fetch(SUPABASE_URL+path,{...opt,headers:h});if(!r.ok)throw new Error(await r.text());const body=await r.text();return body?JSON.parse(body):null}
 async function login(){let m=document.getElementById("loginMsg");m.textContent="Ingresando…";try{let r=await api("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email:document.getElementById("email").value.trim(),password:document.getElementById("password").value})});token=r.access_token;sessionStorage.setItem("mf_admin_token",token);showAdmin();await loadAll()}catch(e){m.textContent="No se pudo ingresar. Revisa correo y contraseña."}}
 function logout(){sessionStorage.removeItem("mf_admin_token");token="";adminBox.classList.add("hidden");loginBox.classList.remove("hidden")}
 function showAdmin(){loginBox.classList.add("hidden");adminBox.classList.remove("hidden")}
