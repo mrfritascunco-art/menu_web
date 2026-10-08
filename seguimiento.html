@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Seguimiento | Mr. Fritas</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#f5f3ed;font-family:Arial,sans-serif;color:#171717}header{background:#111;color:#ffc400;text-align:center;padding:28px 12px;font-size:23px;font-weight:900}main{max-width:520px;margin:24px auto;padding:0 16px}.card{background:white;border-radius:20px;padding:24px;box-shadow:0 8px 24px #0001}h1{font-size:24px;margin:0 0 8px}.muted{color:#666;font-size:14px}#status{background:#ffc400;padding:15px;border-radius:12px;font-size:20px;font-weight:900;margin:18px 0}ol{list-style:none;padding:0;margin:24px 0}li{border-left:4px solid #ddd;padding:5px 0 24px 20px;color:#777;font-weight:700}li.done{border-color:#178653;color:#171717}li.current{border-color:#ffc400;color:#171717}li:last-child{padding-bottom:0}button{background:#111;color:#fff;border:0;border-radius:12px;padding:13px 18px;font-size:15px;font-weight:700;width:100%;cursor:pointer}a{color:#111}</style></head>
+<body><header>🍟 MR. FRITAS BURGER CO.</header><main><div class="card"><h1>📍 Sigue tu pedido</h1><p class="muted" id="updated">Consultando estado…</p><div id="status">Cargando…</div><ol id="steps"></ol><button id="refresh" type="button">↻ Actualizar estado</button><p class="muted">Se actualiza automáticamente cada 15 segundos. Guarda este enlace para volver a consultar tu pedido.</p><p><a href="index.html">← Volver al menú</a></p></div></main>
+<script>
+const API="https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/rpc/track_order";
+const KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
+const token=new URLSearchParams(location.search).get("token");
+const valid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token||"");
+const labels={nuevo:"🧾 Pedido recibido",preparando:"🔥 Preparando tu pedido",listo:"✅ Pedido listo",en_reparto:"🛵 Tu pedido va en camino",entregado:"🏠 Pedido entregado",cancelado:"Pedido cancelado"};
+let loading=false;
+async function refresh(){
+ if(loading)return; if(!valid){document.getElementById("status").textContent="Enlace de seguimiento inválido";document.getElementById("updated").textContent="Revisa el enlace recibido.";return}
+ loading=true;
+ try{
+ const response=await fetch(API,{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({p_tracking_token:token}),cache:"no-store"});
+ if(!response.ok)throw Error("No se pudo consultar");
+ const data=await response.json();const order=Array.isArray(data)?data[0]:data;
+ if(!order){document.getElementById("status").textContent="Pedido no encontrado";document.getElementById("updated").textContent="Verifica que el enlace esté completo.";return}
+ const status=order.order_status||"nuevo",delivery=String(order.order_type||"").toLowerCase().includes("delivery");
+ const stages=delivery?["nuevo","preparando","listo","en_reparto","entregado"]:["nuevo","preparando","listo","entregado"];
+ const current=stages.indexOf(status);
+ document.getElementById("status").textContent=labels[status]||status;
+ document.getElementById("steps").innerHTML=stages.map((stage,i)=>'<li class="'+(i<current?"done":i===current?"current":"")+'">'+labels[stage]+'</li>').join("");
+ document.getElementById("updated").textContent=(order.table_number?"Mesa "+order.table_number+" · ":"")+(delivery?"Delivery":"Retiro o consumo en local")+" · Actualizado "+new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+ }catch(e){document.getElementById("updated").textContent="No pudimos actualizar. Intenta nuevamente.";document.getElementById("status").textContent="Sin conexión";}
+ finally{loading=false}
+}
+document.getElementById("refresh").addEventListener("click",refresh);refresh();setInterval(refresh,15000);
+</script></body></html>
