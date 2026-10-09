@@ -1,0 +1,10 @@
+{
+  "name": "Mr. Fritas Gestión",
+  "short_name": "Mr. Fritas",
+  "start_url": "./gestion.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f1e9",
+  "theme_color": "#111111",
+  "description": "Acceso al sistema interno de Mr. Fritas Burger Co."
+}
