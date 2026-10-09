@@ -29,6 +29,31 @@ jobs:
         run: npm install
       - name: Crear proyecto Android
         run: npx cap add android
+      - name: Instalar ícono personalizado
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          source = Image.open("../icon-512.png").convert("RGBA")
+          base = Path("android/app/src/main/res")
+          sizes = {"mipmap-mdpi":48,"mipmap-hdpi":72,"mipmap-xhdpi":96,"mipmap-xxhdpi":144,"mipmap-xxxhdpi":192}
+          for folder, size in sizes.items():
+              target = base / folder
+              target.mkdir(parents=True, exist_ok=True)
+              icon = source.resize((size,size), Image.Resampling.LANCZOS)
+              icon.save(target/"ic_launcher.png")
+              icon.save(target/"ic_launcher_round.png")
+              icon.save(target/"ic_launcher_foreground.png")
+          adaptive = base/"mipmap-anydpi-v26"
+          adaptive.mkdir(parents=True,exist_ok=True)
+          for name in ("ic_launcher.xml","ic_launcher_round.xml"):
+              (adaptive/name).write_text('''<?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+            <background android:drawable="@android:color/white"/>
+            <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+          </adaptive-icon>''')
+          PY
       - name: Compilar APK de prueba
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
       - name: Guardar APK
