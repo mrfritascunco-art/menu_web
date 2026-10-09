@@ -1,0 +1,12 @@
+{
+  "appId": "cl.mrfritas.gestion",
+  "appName": "Mr. Fritas Gestión",
+  "webDir": "www",
+  "server": {
+    "url": "https://mrfritascunco-art.github.io/menu_web/gestion.html",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
