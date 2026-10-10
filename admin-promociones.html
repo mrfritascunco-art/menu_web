@@ -50,4 +50,6 @@ async function savePromotion(){const el=document.getElementById("promoMessage"),
 document.addEventListener("click",e=>{let b=e.target.closest("[data-promo-edit]");if(b)editPromotion(b.dataset.promoEdit)});
 document.querySelectorAll("[data-tab]").forEach(function(btn){btn.addEventListener("click",function(){showTab(btn.dataset.tab)})});
 (async()=>{try{token=await MFSession.get("admin")||sessionStorage.getItem("mf_admin_token")||""}catch(e){token=sessionStorage.getItem("mf_admin_token")||""}if(token){try{const allowed=await api("/rest/v1/rpc/has_staff_role",{method:"POST",body:JSON.stringify({p_role:"admin"})});if(allowed!==true)throw Error("Sin permiso");showAdmin();await loadAll()}catch(e){token="";sessionStorage.removeItem("mf_admin_token")}}})();
+
+MFSession.watch("admin",()=>token,()=>{token="";sessionStorage.removeItem("mf_admin_token");adminBox.classList.add("hidden");loginBox.classList.remove("hidden");});
 </script></body></html>
