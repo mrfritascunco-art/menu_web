@@ -24,5 +24,27 @@ window.MFSession={
     if(!(await check(role))&&!(role!=="admin"&&await check("admin")))return null;
     return session.access_token;
   },
-  clear(){localStorage.removeItem("mf_gestion_session");sessionStorage.removeItem("mf_gestion_session")}
+  async allowed(token,role){
+    if(!token)return false;
+    const url="https://oiybkvtamrhjfcyfayes.supabase.co";
+    const key="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
+    const check=async name=>{
+      const r=await fetch(url+"/rest/v1/rpc/has_staff_role",{method:"POST",headers:{"apikey":key,"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({p_role:name}),cache:"no-store"});
+      return r.ok&&(await r.json())===true;
+    };
+    return await check(role)||(role!=="admin"&&await check("admin"));
+  },
+  watch(role,getToken,onDenied){
+    let busy=false;
+    const verify=async()=>{
+      if(busy||!getToken())return;
+      busy=true;
+      try{if(!await this.allowed(getToken(),role))onDenied()}catch(e){onDenied()}finally{busy=false}
+    };
+    const interval=setInterval(verify,20000);
+    document.addEventListener("visibilitychange",()=>{if(!document.hidden)verify()});
+    window.addEventListener("storage",e=>{if(e.key==="mf_gestion_session"&&!e.newValue)onDenied()});
+    return interval;
+  },
+  clear(){localStorage.removeItem("mf_gestion_session");sessionStorage.removeItem("mf_gestion_session");["mf_kitchen_token","mf_cash_token","mf_admin_token"].forEach(k=>sessionStorage.removeItem(k))}
 };
