@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Transferencia | Mr. Fritas</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f2f2f2;
+      font-family: Arial, sans-serif;
+      color: #111;
+    }
+    header {
+      background: #111;
+      text-align: center;
+      padding: 25px;
+      border-bottom: 6px solid #ffc400;
+    }
+    header img { width: 190px; max-width: 80%; }
+    main { max-width: 460px; margin: 25px auto; padding: 15px; }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 5px 20px #0002;
+    }
+    h1 { text-align: center; font-size: 25px; }
+    .sub { text-align: center; color: #666; }
+    .dato { padding: 12px 0; border-bottom: 1px solid #eee; }
+    .dato small { display: block; color: #777; margin-bottom: 5px; }
+    .dato strong { overflow-wrap: anywhere; }
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 19px;
+      border: 0;
+      border-radius: 12px;
+      background: #ffc400;
+      color: #111;
+      font-size: 19px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #mensaje { text-align: center; font-weight: bold; margin-top: 15px; }
+    footer { text-align: center; margin-top: 25px; color: #666; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png.png" alt="Mr. Fritas">
+  </header>
+
+  <main>
+    <div class="card">
+      <h1>🏦 Datos para transferir</h1>
+      <p class="sub">¡Copia nuestros datos y paga fácilmente!</p>
+
+      <div class="dato">
+        <small>Titular</small>
+        <strong>Camilo Arnoldo Alarcón Rubilar</strong>
+      </div>
+      <div class="dato">
+        <small>RUT</small>
+        <strong>18.658.041-9</strong>
+      </div>
+      <div class="dato">
+        <small>Banco</small>
+        <strong>Mercado Pago</strong>
+      </div>
+      <div class="dato">
+        <small>Tipo de cuenta</small>
+        <strong>Cuenta Vista</strong>
+      </div>
+      <div class="dato">
+        <small>Número de cuenta</small>
+        <strong>1053633241</strong>
+      </div>
+      <div class="dato">
+        <small>Correo</small>
+        <strong>mr.fritascunco@gmail.com</strong>
+      </div>
+
+      <button onclick="copiarDatos()">📋 COPIAR DATOS</button>
+      <p id="mensaje" role="status"></p>
+    </div>
+
+    <footer>🍟 ¡Gracias por preferir Mr. Fritas!</footer>
+  </main>
+
+  <script>
+    async function copiarDatos() {
+      const datos = `Camilo Arnoldo Alarcón Rubilar
+RUT: 18.658.041-9
+Mercado Pago
+Cuenta Vista
+N° de cuenta: 1053633241
+mr.fritascunco@gmail.com`;
+
+      const mensaje = document.getElementById("mensaje");
+
+      try {
+        await navigator.clipboard.writeText(datos);
+        mensaje.textContent = "✅ ¡Datos copiados correctamente!";
+      } catch (error) {
+        mensaje.textContent = "No se pudo copiar automáticamente.";
+      }
+    }
+  </script>
+</body>
+</html>
