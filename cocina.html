@@ -28,4 +28,6 @@ async function setStatus(id,status){const m=$("statusMsg");m.textContent="Guarda
 $("loginBtn").addEventListener("click",login);$("logoutBtn").addEventListener("click",logout);$("orders").addEventListener("click",function(e){enableAudio();const b=e.target.closest("[data-order]");if(b)setStatus(b.dataset.order,b.dataset.status)});document.addEventListener("click",enableAudio,{once:true});
 setInterval(()=>{if(token)loadOrders()},5000);
 (async()=>{try{token=await MFSession.get("cocina")||sessionStorage.getItem("mf_kitchen_token")||""}catch(e){token=sessionStorage.getItem("mf_kitchen_token")||""}if(token){try{const allowed=await api("/rest/v1/rpc/has_staff_role",{method:"POST",body:JSON.stringify({p_role:"cocina"})});if(allowed!==true){const admin=await api("/rest/v1/rpc/has_staff_role",{method:"POST",body:JSON.stringify({p_role:"admin"})});if(admin!==true)throw Error("Sin permiso")}showKitchen();await loadOrders()}catch(e){logout()}}})();
+
+MFSession.watch("cocina",()=>token,()=>{token="";sessionStorage.removeItem("mf_kitchen_token");showLogin();$("loginMsg").textContent="Sesión finalizada o permisos modificados. Ingresa nuevamente.";});
 </script></body></html>
