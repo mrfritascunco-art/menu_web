@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Club Fritas | Administración</title><style>*{box-sizing:border-box}body{margin:0;background:#f4f2e9;font:16px Arial;color:#111}header{background:#111;color:white;text-align:center;padding:22px;border-bottom:5px solid #ffc400}header img{width:150px;max-height:120px;object-fit:contain}main{max-width:800px;margin:auto;padding:20px}.panel{background:#fff;border-radius:16px;padding:20px;margin:15px 0;box-shadow:0 4px 16px #0001}input,button{padding:13px;border-radius:9px;font-size:16px}input{border:1px solid #ccc;width:100%;margin:6px 0 12px}button{border:0;background:#ffc400;font-weight:bold;cursor:pointer}button:disabled{opacity:.5}.hidden{display:none}.request{padding:18px 0;border-bottom:1px solid #ddd}.request:last-child{border:0}.actions{display:flex;gap:10px;margin-top:12px}.reject{background:#eee}.msg{color:#555;white-space:pre-wrap}a{color:#996b00}</style></head><body><header><img src="logo.png.png" alt="Mr. Fritas"><h1>🍔 Club Fritas · Administración</h1></header><main><section class="panel" id="login"><h2>Acceso administrador</h2><form id="loginForm"><label>Correo</label><input id="email" type="email" required autocomplete="username"><label>Contraseña</label><input id="password" type="password" required autocomplete="current-password"><button>Entrar</button></form><p id="loginMsg" class="msg"></p></section><section class="panel hidden" id="dashboard"><h2>Solicitudes pendientes</h2><p>Antes de aprobar, verifica que el cliente te escribió desde el mismo número por WhatsApp.</p><button id="reload">↻ Actualizar solicitudes</button> <button id="logout" class="reject">Cerrar sesión</button><p id="msg" class="msg"></p><div id="requests"></div><h2>Tarjetas de socios</h2><p>Genera un enlace privado y envíalo solo al WhatsApp verificado. Uno nuevo invalida el anterior.</p><button id="loadMembers">Ver socios aprobados</button><p id="memberMsg" class="msg"></p><div id="members"></div></section><p><a href="admin-promociones.html">← Volver al panel general</a></p></main><script>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Club Fritas | Administración</title><style>*{box-sizing:border-box}body{margin:0;background:#f4f2e9;font:16px Arial;color:#111}header{background:#111;color:white;text-align:center;padding:22px;border-bottom:5px solid #ffc400}header img{width:150px;max-height:120px;object-fit:contain}main{max-width:800px;margin:auto;padding:20px}.panel{background:#fff;border-radius:16px;padding:20px;margin:15px 0;box-shadow:0 4px 16px #0001}input,button{padding:13px;border-radius:9px;font-size:16px}input{border:1px solid #ccc;width:100%;margin:6px 0 12px}button{border:0;background:#ffc400;font-weight:bold;cursor:pointer}button:disabled{opacity:.5}.hidden{display:none}.request{padding:18px 0;border-bottom:1px solid #ddd}.request:last-child{border:0}.actions{display:flex;gap:10px;margin-top:12px}.reject{background:#eee}.msg{color:#555;white-space:pre-wrap}a{color:#996b00}</style></head><body><header><img src="logo.png.png" alt="Mr. Fritas"><h1>🍔 Club Fritas · Administración</h1></header><main><section class="panel" id="login"><h2>Acceso administrador</h2><form id="loginForm"><label>Correo</label><input id="email" type="email" required autocomplete="username"><label>Contraseña</label><input id="password" type="password" required autocomplete="current-password"><button>Entrar</button></form><p id="loginMsg" class="msg"></p></section><section class="panel hidden" id="dashboard"><h2>Solicitudes pendientes</h2><p>Antes de aprobar, verifica que el cliente te escribió desde el mismo número por WhatsApp.</p><button id="reload">↻ Actualizar solicitudes</button> <button id="logout" class="reject">Cerrar sesión</button><p id="msg" class="msg"></p><div id="requests"></div><h2>Tarjetas de socios</h2><p>Genera un enlace privado y envíalo solo al WhatsApp verificado. Uno nuevo invalida el anterior.</p><button id="loadMembers">Ver socios aprobados</button><p id="memberMsg" class="msg"></p><div id="members"></div><h2>Canjear recompensas</h2><p>Solo administración puede confirmar un canje. Comprueba la compra y el premio antes de pulsar Canjear.</p><div id="rewardMembers"></div><p id="rewardMsg" class="msg"></p></section><p><a href="admin-promociones.html">← Volver al panel general</a></p></main><script>
 const BASE="https://oiybkvtamrhjfcyfayes.supabase.co",KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";let token="";
 const $=id=>document.getElementById(id);
 async function api(path,options={}){const r=await fetch(BASE+path,{...options,headers:{"apikey":KEY,"Content-Type":"application/json",...(token?{"Authorization":"Bearer "+token}:{}),...(options.headers||{})}});const d=await r.json().catch(()=>null);if(!r.ok)throw Error(d?.message||d?.error_description||"HTTP "+r.status);return d}
@@ -13,6 +13,8 @@ $("loadMembers").onclick=async()=>{
  const rows=await api("/rest/v1/club_customers?select=id,customer_name,phone&order=created_at.desc&limit=100");
  $("members").innerHTML=rows.map(r=>'<div class="request"><strong>'+esc(r.customer_name)+'</strong><p>'+esc(r.phone)+'</p><button data-card-id="'+esc(r.id)+'" data-card-phone="'+esc(r.phone)+'">Generar enlace privado</button></div>').join("");
  $("memberMsg").textContent=rows.length+" socios encontrados.";
+ $("rewardMembers").innerHTML=rows.map(r=>'<div class="request"><strong>'+esc(r.customer_name)+'</strong> · '+esc(r.phone)+'<div class="actions"><button data-reward-id="'+esc(r.id)+'" data-reward-type="discount_10">Canjear 10%</button><button data-reward-id="'+esc(r.id)+'" data-reward-type="free_item">Canjear premio gratis</button></div></div>').join("");
+
  }catch(e){$("memberMsg").textContent="Error: "+e.message}
 };
 $("members").onclick=async e=>{
@@ -27,6 +29,24 @@ $("members").onclick=async e=>{
  $("memberMsg").textContent="Enlace generado. Envíalo solo al socio verificado.";
  const a=document.createElement("a");a.href=wa;a.target="_blank";a.rel="noopener";a.textContent="📲 Enviar enlace al socio";$("memberMsg").append(document.createElement("br"),a);
  }catch(err){$("memberMsg").textContent="Error: "+err.message}finally{b.disabled=false}
+};
+
+$("rewardMembers").onclick=async e=>{
+ const b=e.target.closest("button[data-reward-id]");if(!b)return;
+ const type=b.dataset.rewardType;let choice=null;
+ if(type==="free_item"){
+  const options="1: Papas con 1 topping, 2: Smash Whopper, 3: Cuarto de Libra, 4: Cheese Burger";
+  const selected=prompt("Premio a entregar: "+options+"\nEscribe 1, 2, 3 o 4.");
+  if(selected===null)return;
+  choice=({"1":"papas_1_topping","2":"smash_whopper","3":"cuarto_libra","4":"cheese_burger"})[selected.trim()];
+  if(!choice)return alert("Selección inválida");
+ }
+ if(!confirm("¿Confirmas que vas a entregar esta recompensa al socio? El canje quedará registrado."))return;
+ b.disabled=true;
+ try{
+ const data=await api("/rest/v1/rpc/club_redeem_reward",{method:"POST",body:JSON.stringify({p_customer_id:b.dataset.rewardId,p_reward_type:type,p_reward_choice:choice})});
+ $("rewardMsg").textContent="✅ Canje registrado correctamente. Sellos acumulados: "+data.total_stamps;
+ }catch(err){$("rewardMsg").textContent="❌ No se pudo canjear: "+err.message}finally{b.disabled=false}
 };
 $("reload").onclick=load;$("logout").onclick=()=>{sessionStorage.removeItem("mf_club_admin_token");token="";$("dashboard").classList.add("hidden");$("login").classList.remove("hidden")};
 (async()=>{const t=sessionStorage.getItem("mf_club_admin_token");if(t)try{await enter(t)}catch(e){sessionStorage.removeItem("mf_club_admin_token");token=""}})();
