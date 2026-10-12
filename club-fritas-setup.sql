@@ -2,7 +2,7 @@
 -- Ejecutar en Supabase SQL Editor como propietario del proyecto.
 create table if not exists public.club_requests (
  id uuid primary key default gen_random_uuid(),
- phone text not null check (phone ~ '^[+]569[0-9]{8}),
+ phone text not null check (phone ~ '^[+]569[0-9]{8}$'),
  customer_name text not null check (char_length(trim(customer_name)) between 2 and 100),
  marketing_opt_in boolean not null default false,
  status text not null default 'pending' check (status in ('pending','approved','rejected')),
@@ -33,7 +33,7 @@ returns text language plpgsql security definer set search_path = public, pg_temp
 declare v_phone text; v_name text;
 begin
  v_phone := trim(p_phone); v_name := trim(p_name);
- if v_phone !~ '^\\+569[0-9]{8}$' or char_length(v_name) not between 2 and 100 then
+ if v_phone !~ '^[+]569[0-9]{8}$' or char_length(v_name) not between 2 and 100 then
    raise exception 'Datos inválidos';
  end if;
  if exists (select 1 from public.club_customers where phone=v_phone) then return 'already_member'; end if;
@@ -96,7 +96,7 @@ returns text language plpgsql security definer set search_path = public, pg_temp
 declare v_phone text; v_name text;
 begin
  v_phone := trim(p_phone); v_name := trim(p_name);
- if v_phone !~ '^[+]569[0-9]{8} or char_length(v_name) not between 2 and 100 then
+ if v_phone !~ '^[+]569[0-9]{8}$' or char_length(v_name) not between 2 and 100 then
    raise exception 'Datos inválidos';
  end if;
  if exists (select 1 from public.club_customers where phone=v_phone) then return 'already_member'; end if;
