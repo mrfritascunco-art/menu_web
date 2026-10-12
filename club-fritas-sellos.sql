@@ -1,6 +1,9 @@
 -- Club Fritas: sellos por pedido entregado. Ejecutar una vez en SQL Editor.
 -- Conserva order_id UUID histórico y agrega una referencia bigint compatible.
 alter table public.club_stamps add column if not exists order_number_id bigint;
+-- El antiguo order_id UUID no corresponde a orders.id bigint.
+-- Mantener la columna histórica, pero permitir NULL en sellos nuevos.
+alter table public.club_stamps alter column order_id drop not null;
 create unique index if not exists club_stamps_order_number_id_unique
   on public.club_stamps(order_number_id)
   where order_number_id is not null;
