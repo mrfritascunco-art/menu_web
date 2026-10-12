@@ -12,7 +12,7 @@
 <section class="panel"><h2>Así ganas premios</h2><div class="stamps"><div class="stamp"><img src="logo.png.png" alt="Sello 1"></div><div class="stamp"><img src="logo.png.png" alt="Sello 2"></div><div class="stamp"><img src="logo.png.png" alt="Sello 3"></div><div class="stamp"><img src="logo.png.png" alt="Sello 4"></div><div class="stamp"><img src="logo.png.png" alt="Sello 5"></div><div class="stamp"><img src="logo.png.png" alt="Sello 6"></div><div class="stamp"><img src="logo.png.png" alt="Sello 7"></div><div class="stamp"><img src="logo.png.png" alt="Sello 8"></div><div class="stamp"><img src="logo.png.png" alt="Sello 9"></div><div class="stamp"><img src="logo.png.png" alt="Sello 10"></div></div><p>🍔 <b>Un sello</b> por pedido entregado desde $15.000 en productos, sin contar reparto.</p><p>🎁 <b>5 sellos:</b> 10% de descuento en la próxima compra.</p><p>🍟 <b>10 sellos:</b> papas con un topping o una hamburguesa participante.</p><p class="muted">La acreditación digital de sellos está en preparación.</p></section>
 <footer><a href="index.html">← Volver al menú</a></footer></main>
 <script>
-document.getElementById("clubRequest").addEventListener("submit",function(e){
+document.getElementById("clubRequest").addEventListener("submit",async function(e){
 e.preventDefault();
 const phone=document.getElementById("phone").value.replace(/\D/g,"");
 const name=document.getElementById("name").value.trim();
@@ -21,7 +21,22 @@ if(!/^9\d{8}$/.test(phone)){msg.textContent="Ingresa un celular chileno válido:
 if(!name){msg.textContent="Ingresa tu nombre";msg.className="error";return}
 const consent=document.getElementById("marketing").checked;
 const text="Hola Mr. Fritas 🍔\nQuiero solicitar mi inscripción gratis en CLUB FRITAS.\nNombre: "+name+"\nMi WhatsApp: +56"+phone+"\nAcepto las condiciones del programa y el uso de mi número para administrar mis sellos y premios.\nAutorización opcional para recibir promociones por WhatsApp: "+(consent?"SÍ, AUTORIZO":"NO AUTORIZO")+".\nPor favor confirmen mi inscripción cuando esté activa.";
-msg.textContent="Se abrirá WhatsApp. Envía el mensaje desde el número que ingresaste; tu inscripción quedará pendiente de confirmación.";msg.className="success";
-window.open("https://wa.me/56988331113?text="+encodeURIComponent(text),"_blank","noopener");
+const whatsapp="https://wa.me/56988331113?text="+encodeURIComponent(text);
+const btn=document.getElementById("sendBtn");btn.disabled=true;
+msg.textContent="Registrando solicitud…";
+try{
+ const response=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/rpc/club_request_join",{
+ method:"POST",headers:{"apikey":"sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT","Content-Type":"application/json"},
+ body:JSON.stringify({p_phone:"+56"+phone,p_name:name,p_marketing_opt_in:consent})
+ });
+ if(!response.ok)throw Error("El registro de solicitudes aún no está configurado.");
+ const status=await response.json();
+ msg.textContent=status==="already_member"?"Ya existe una tarjeta asociada a este número. Escríbenos para revisarla.":"Solicitud registrada. Ahora envía el mensaje por WhatsApp desde el número indicado para que podamos verificarlo.";
+ msg.className="success";
+ const link=document.createElement("a");link.href=whatsapp;link.target="_blank";link.rel="noopener noreferrer";link.textContent="📲 Abrir WhatsApp para confirmar";link.style.cssText="display:block;text-align:center;margin-top:12px;padding:14px;border-radius:10px;background:#ffcb05;color:#111;font-weight:900;text-decoration:none";
+ msg.after(link);
+ window.location.href=whatsapp;
+}catch(err){msg.textContent=err.message+" No se ha guardado la solicitud. Intenta más tarde.";msg.className="error";btn.disabled=false}
+
 });
 </script></body></html>
