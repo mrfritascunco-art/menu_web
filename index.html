@@ -286,8 +286,8 @@ if(tipo==="Delivery"&&a)msg+=`🏠 *Dirección:* ${a}\n`;if(tipo==="Delivery"&&c
 msg+="━━━━━━━━━━━━━━\n🧾 *PEDIDO*\n\n";
 Object.entries(cart).forEach(([id,q])=>{let p=cartProduct(id);t+=p[1]*q;msg+="*"+q+"× "+p[0]+"* — "+fmt(p[1]*q)+"\n";if(p[2]?.length)p[2].forEach(m=>msg+="   └ "+m+"\n");msg+="\n"});
 if(tipo==="Delivery"){if(deliveryZone()==="fuera"){msg+="📍 *Reparto fuera de límites — costo por confirmar por WhatsApp*\n\n"}else{t+=2000;msg+="🛵 Delivery urbano — "+fmt(2000)+"\n\n"}}
-if(useDiscount){let productSubtotal=Object.entries(cart).reduce((sum,[id,q])=>sum+cartProduct(id)[1]*q,0);msg+="🍟 *CLUB FRITAS 10%:* −"+fmt(Math.round(productSubtotal*.1))+"\\n";t-=Math.round(productSubtotal*.1)}
-msg+="━━━━━━━━━━━━━━\\n💰 *"+(tipo==="Delivery"&&deliveryZone()==="fuera"?"SUBTOTAL (reparto no incluido): ":"TOTAL: ")+fmt(t)+"*";
+if(useDiscount){let productSubtotal=Object.entries(cart).reduce((sum,[id,q])=>sum+cartProduct(id)[1]*q,0);msg+="🍟 *CLUB FRITAS 10%:* −"+fmt(Math.round(productSubtotal*.1))+"\n";t-=Math.round(productSubtotal*.1)}
+msg+="━━━━━━━━━━━━━━\n💰 *"+(tipo==="Delivery"&&deliveryZone()==="fuera"?"SUBTOTAL (reparto no incluido): ":"TOTAL: ")+fmt(t)+"*";
 if(o)msg+="\n━━━━━━━━━━━━━━\n📝 *Observaciones:* "+o;
 localStorage.setItem("mrFritasLastCart",JSON.stringify({cart,customData}));repeatVisibility();if(tableNumber){let b=document.getElementById("moreOrderBtn");if(b)b.style.display="block"}if(useDiscount){
  const token=localStorage.getItem("mrFritasClubCardToken")||"";
@@ -324,7 +324,7 @@ localStorage.setItem("mrFritasLastCart",JSON.stringify({cart,customData}));repea
   showTrackingLink(result.tracking_token);
   window.open("https://wa.me/56988331113?text="+encodeURIComponent(msg),"_blank");
   clubDiscountEligible=false;document.getElementById("clubDiscountCheck").checked=false;drawCart();
- }catch(e){alert("No se pudo aplicar el descuento: "+e.message+"\\nNo se enviará este pedido por WhatsApp. Revisa tu carrito o contacta al local.");console.error(e)}
+ }catch(e){alert("No se pudo aplicar el descuento: "+e.message+"\nNo se enviará este pedido por WhatsApp. Revisa tu carrito o contacta al local.");console.error(e)}
  finally{button.disabled=false;button.textContent="Enviar pedido por WhatsApp"}
  return;
 }
