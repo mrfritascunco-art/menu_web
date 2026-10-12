@@ -2,6 +2,10 @@
 create extension if not exists pgcrypto with schema extensions;
 alter table public.club_customers add column if not exists card_token_hash text;
 create unique index if not exists club_customers_card_token_hash_unique on public.club_customers(card_token_hash);
+alter table public.club_customers enable row level security;
+grant select on public.club_customers to authenticated;
+drop policy if exists club_customers_admin_select on public.club_customers;
+create policy club_customers_admin_select on public.club_customers for select to authenticated using (public.has_staff_role('admin'));
 
 create or replace function public.club_issue_card_link(p_customer_id uuid)
 returns text language plpgsql security definer set search_path=public,extensions,pg_temp as $$
