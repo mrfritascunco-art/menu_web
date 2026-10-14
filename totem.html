@@ -74,14 +74,14 @@ $("confirmCustom").onclick=()=>{
 };
 $("customOptions").addEventListener("change",calcCustom);
 function renderDayOffer(controls){
- const offer=controls.find(x=>x.burger_of_day===true&&/^0-\d+$/.test(x.product_id)&&x.available!==false&&x.day_price!=null&&Number.isFinite(Number(x.day_price))&&Number(x.day_price)>=0);
- if(!offer){dayOffer=null;return}
+ const offer=controls.find(x=>(x.burger_of_day===true||x.burger_of_day==="true")&&/^0-\d+$/.test(String(x.product_id))&&x.available!==false&&x.day_price!=null&&Number.isFinite(Number(x.day_price))&&Number(x.day_price)>=0);
+ if(!offer){dayOffer=null;if(!dayShown){dayShown=true;const candidate=products.find(p=>p.category==="Smash Burgers");if(candidate){dayOffer={...candidate,id:"day-"+candidate.id};$("dayFeatureBody").innerHTML=(candidate.image?'<img src="'+safe(candidate.image)+'" alt="'+safe(candidate.name)+'">':"")+'<h3>'+safe(candidate.name)+'</h3><p>'+safe(candidate.description)+'</p><div class="day-price">'+money(candidate.price)+'</div><p class="muted">Burger destacada · Precio de carta. No hay oferta del día activa.</p>';$("dayOverlay").querySelector("h2").textContent="🍔 BURGER DESTACADA";$("dayOverlay").classList.remove("hidden")}}return}
  const original=products.find(p=>p.id===offer.product_id);
  if(!original){dayOffer=null;return}
  dayOffer={...original,id:"day-"+original.id,price:Number(offer.day_price)};
  const body=$("dayFeatureBody");
  body.innerHTML=(dayOffer.image?'<img src="'+safe(dayOffer.image)+'" alt="'+safe(dayOffer.name)+'" onerror="this.style.display=\'none\'">':"")+'<h3>'+safe(dayOffer.name)+'</h3><p>'+safe(dayOffer.description)+'</p><div class="day-price">'+(original.price>dayOffer.price?'<span class="day-old">'+money(original.price)+'</span>':"")+money(dayOffer.price)+'</div>';
- if(!dayShown){dayShown=true;$("dayOverlay").classList.remove("hidden")}
+ $("dayOverlay").querySelector("h2").textContent="🍔 BURGER DEL DÍA";if(!dayShown){dayShown=true;$("dayOverlay").classList.remove("hidden")}
 }
 function reconcileCart(){
  let changed=false,removed=[];
