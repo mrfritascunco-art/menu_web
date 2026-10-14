@@ -97,7 +97,7 @@ const sections=[
 {name:"Promos",items:[["Combo para 2",17900,"2 smash clásicas + papas + salsas + 2 bebidas • Exclusivo consumo local","Combo de Hamburguesas y Papas.png"]]}
 ];
 let cart={},customerLocation="",customBase="",customData={},pendingUpsells=[],menuControl={},customOfferPrice=null; const fmt=n=>"$"+n.toLocaleString("es-CL");
-const MENU_API="https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_control?select=product_id,available,featured,price,burger_of_day,day_price";
+const MENU_API="https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_control?select=product_id,product_name,description,image_url,available,featured,price,burger_of_day,day_price";
 const MENU_KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
 const tableParam=new URLSearchParams(location.search).get("mesa");
 const tableNumber=/^[1-4]$/.test(tableParam||"")?tableParam:"";
@@ -109,7 +109,31 @@ const drinkFlavors=["Coca-Cola","Sprite","Fanta","Kem","Canada Dry","Limón Soda
 const noFriesBurgers=["Cheese Burger","Cuarto de Libra","Smash Whopper"];
 const snackUpsells=[["6 Empanadas de queso",2500,"3-0"],["4 Nuggets de pollo",2500,"3-1"],["4 Aros de cebolla",2500,"3-2"]];
 let storeMode="automatic",storeModeLoaded=false;const STORE_STATUS_URL="https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/store_status?select=mode&id=eq.1";async function fetchStoreMode(){const r=await fetch(STORE_STATUS_URL,{headers:{apikey:MENU_KEY},cache:"no-store"});if(!r.ok)throw Error("Estado no disponible");const a=await r.json();if(!a||!a[0]||!["automatic","open","closed"].includes(a[0].mode))throw Error("Estado inválido");storeMode=a[0].mode;storeModeLoaded=true;checkHours();return storeMode}function isStoreOpen(){const h=new Date().getHours();return storeMode==="open"||(storeMode==="automatic"&&h>=18)}function checkHours(){let d=new Date(),h=d.getHours(),open=isStoreOpen();let el=document.getElementById("openStatus");el.className="status-in "+(open?"open":"closed");if(open){el.textContent=storeMode==="open"?"🟢 ESTAMOS ATENDIENDO":"🟢 ESTAMOS ATENDIENDO • HASTA LAS 00:00 HRS";return}if(storeMode==="closed"){el.textContent="🔴 LOCAL CERRADO POR AHORA • NO ESTAMOS RECIBIENDO PEDIDOS";return}let next=new Date(d);next.setHours(18,0,0,0);let diff=Math.max(0,next-d),hh=Math.floor(diff/3600000),mm=Math.floor((diff%3600000)/60000),ss=Math.floor((diff%60000)/1000);el.textContent="🔴 CERRADO • ABRIMOS A LAS 18:00 HRS • FALTAN "+String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0")}
-function baseProduct(id){let [a,b]=id.split("-").map(Number);return sections[a].items[b]}
+const customMenuProducts={};
+async function loadCustomProducts(){
+ try{
+  const r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_custom?select=*&order=created_at.asc",{headers:{apikey:MENU_KEY},cache:"no-store"});
+  if(!r.ok)throw Error("No se pudieron cargar los productos");
+  const products=await r.json();
+  Object.keys(customMenuProducts).forEach(k=>delete customMenuProducts[k]);
+  document.querySelectorAll(".mf-custom-product").forEach(n=>n.remove());
+  const categories={"Hamburguesas":0,"Papas y toppings":2,"Snacks":3,"Bebidas":4,"Combos":5};
+  const safe=s=>String(s??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  products.forEach(p=>{
+   if(p.available===false)return;
+   const si=categories[p.category],section=document.getElementById("s"+si);
+   if(!section)return;
+   const id="custom-"+p.id;
+   customMenuProducts[id]=[p.name,Number(p.price),p.description||"",p.image_url||""];
+   const d=document.createElement("div");d.className="card mf-custom-product";d.dataset.productId=id;
+   const img=p.image_url&&/^https:\/\//.test(p.image_url)?'<img src="'+safe(p.image_url)+'" alt="'+safe(p.name)+'" loading="lazy">':(si===2?"🍟":"🍔");
+   d.innerHTML='<div class="pic">'+img+'</div><div class="info"><h3>'+safe(p.name)+'</h3><div class="desc">'+safe(p.description)+'</div><div class="row"><span class="price">'+fmt(Number(p.price))+'</span><button class="add" type="button">+</button></div></div>';
+   d.querySelector("button").addEventListener("click",()=>add(id));
+   section.querySelector(".grid").appendChild(d);
+  });
+ }catch(e){console.warn("Productos adicionales no disponibles",e)}
+}
+function baseProduct(id){if(id.startsWith("custom-"))return customMenuProducts[id];let [a,b]=id.split("-").map(Number);return sections[a].items[b]}
 function openCustom(id){customBase=id;let p=baseProduct(id),[si]=id.split("-").map(Number);document.getElementById("customName").textContent=p[0];document.getElementById("customDesc").textContent=p[2];let rem="",ext="",special="";
 if(si===0){let raw=p[2].split("•")[0],ings=raw.split(",").map(x=>x.trim()).filter(x=>x&&!/carne smash/i.test(x));rem="<div class='opt-title'>Quitar ingredientes (sin costo)</div>"+ings.map((x,i)=>"<div class='option'><label><input type='checkbox' class='remOpt' value='"+x+"'> Sin "+x+"</label></div>").join("");ext="<div class='opt-title'>Agregar extras</div>"+burgerExtras.filter(x=>x[2]!==false).map((x,i)=>"<div class='option'><label><input type='checkbox' class='extraOpt' data-price='"+x[1]+"' value='"+x[0]+"' onchange='calcCustom()'> "+x[0]+"</label><b>+"+fmt(x[1])+"</b></div>").join("")}
 if(p[0]==="Base Smash"){rem="<div class='opt-title'>Tu Smash incluye</div><div class='option'><span>🍔 Pan brioche + carne smash + mayo casera</span></div><div class='option'><span>🍟 Papas fritas incluidas</span></div>";ext="<div class='opt-title'>Agregar extras</div>"+burgerExtras.filter(x=>x[2]!==false).map(x=>"<div class='option'><label><input type='checkbox' class='extraOpt' data-price='"+x[1]+"' value='"+x[0]+"' onchange='calcCustom()'> "+x[0]+"</label><b>"+(x[1]?"+"+fmt(x[1]):"Gratis")+"</b></div>").join("");special="<div class='opt-title'>Salsas gratis</div>"+freeSauces.map(x=>"<div class='option'><label><input type='checkbox' class='sauceOpt' value='"+x+"'> "+x+"</label></div>").join("")}
@@ -162,7 +186,7 @@ async function loadMenuControl(){
  let headers={apikey:MENU_KEY},noCache={headers,cache:"no-store"};
  try{
   let r=await fetch(MENU_API,noCache);
-  if(r.ok){let rows=await r.json();menuControl={};rows.forEach(x=>{menuControl[x.product_id]=x;if(x.price!==null&&Number.isFinite(Number(x.price))){let p=x.product_id.split("-").map(Number);if(sections[p[0]]&&sections[p[0]].items[p[1]])sections[p[0]].items[p[1]][1]=Number(x.price)}})}
+  if(r.ok){let rows=await r.json();menuControl={};rows.forEach(x=>{menuControl[x.product_id]=x;if(x.price!==null&&Number.isFinite(Number(x.price))){let p=x.product_id.split("-").map(Number);if(sections[p[0]]&&sections[p[0]].items[p[1]]){let item=sections[p[0]].items[p[1]];item[1]=Number(x.price);if(x.product_name)item[0]=x.product_name;if(x.description)item[2]=x.description;if(x.image_url)item[3]=x.image_url}}})}
  }catch(e){}
  try{
   let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_extras?select=id,name,price,available",noCache);
@@ -334,7 +358,7 @@ let flashPromo=null,flashTimer=null,flashAutoClose=null;
 function closeFlashPopup(){document.getElementById("flashPopup").classList.remove("show");if(flashAutoClose){clearTimeout(flashAutoClose);flashAutoClose=null}}
 function refreshFlashClock(){if(!flashPromo)return;let remaining=new Date(flashPromo.ends_at).getTime()-Date.now();if(remaining<=0){flashPromo=null;closeFlashPopup();if(flashTimer){clearInterval(flashTimer);flashTimer=null}return}let seconds=Math.ceil(remaining/1000);document.getElementById("flashPopupClock").textContent=String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")}
 async function loadFlashPopup(){try{let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_flash_promos?select=gift_text,active,starts_at,ends_at&id=eq.1",{headers:{apikey:MENU_KEY},cache:"no-store"});if(!r.ok)return;let a=(await r.json())[0];if(!a||!a.active||!a.gift_text||!a.ends_at||new Date(a.ends_at).getTime()<=Date.now()||new Date(a.starts_at).getTime()>Date.now())return;flashPromo=a;document.getElementById("flashPopupGift").textContent="🎁 "+a.gift_text;refreshFlashClock();document.getElementById("flashPopup").classList.add("show");flashTimer=setInterval(refreshFlashClock,1000);flashAutoClose=setTimeout(closeFlashPopup,10000)}catch(e){console.warn("Promo relámpago no disponible",e)}}
-render();loadMenuPromotions();loadMenuControl();loadSpecialAnnouncement();loadFlashPopup();fetchStoreMode().catch(()=>{document.getElementById("openStatus").textContent="⚠️ No se pudo verificar el estado del local"});update();repeatVisibility();tableMode();setInterval(checkHours,1000);setInterval(()=>fetchStoreMode().catch(()=>{}),20000);setTimeout(showRepeatPop,700);
+render();loadMenuPromotions();loadMenuControl().then(loadCustomProducts);loadSpecialAnnouncement();loadFlashPopup();fetchStoreMode().catch(()=>{document.getElementById("openStatus").textContent="⚠️ No se pudo verificar el estado del local"});update();repeatVisibility();tableMode();setInterval(checkHours,1000);setInterval(()=>fetchStoreMode().catch(()=>{}),20000);setTimeout(showRepeatPop,700);
 </script><script>
 (function(){
   const key="mrFritasTestDevice";
