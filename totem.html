@@ -126,7 +126,15 @@ function testPayload(){
  const choice=document.querySelector('input[name="tipChoice"]:checked')?.value||"0";
  const tip=choice==="10"?Math.round(subtotal*.1):choice==="custom"?Math.max(0,Math.round(Number($("tipCustomAmount").value)||0)):0;
  if(tip>50000)throw Error("La propina supera el máximo permitido.");
- return {items,payment_method:document.querySelector('input[name="totemPayment"]:checked')?.value||"caja",tip_amount:tip};
+ const wantsClub=$("clubOptIn").checked;
+ let clubPhone=null;
+ if(wantsClub){
+  const digits=$("clubPhone").value.replace(/\D/g,"");
+  clubPhone=digits.length===9&&digits.startsWith("9")?"+56"+digits:
+    digits.length===11&&digits.startsWith("569")?"+"+digits:null;
+  if(!clubPhone)throw Error("Ingresa un teléfono chileno válido para el Club Fritas.");
+ }
+ return {items,payment_method:document.querySelector('input[name="totemPayment"]:checked')?.value||"caja",tip_amount:tip,club_phone:clubPhone};
 }
 $("submitTotemOrder").onclick=async()=>{
  if(!TEST_MODE||submittingOrder)return;
