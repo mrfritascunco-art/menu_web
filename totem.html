@@ -171,7 +171,7 @@ function getFreshQrTurnstileToken(){
   window.turnstile.render(container,{sitekey:"0x4AAAAAAFXsTNAHqzQoVgWC",theme:"light",callback:token=>{if(!done){done=true;clearTimeout(timeout);resolve(token);}}});
  });
 }
-$("clubQrClose").onclick=()=>{$("clubQrOverlay").classList.add("hidden");$("clubQrImage").innerHTML="";$("clubQrStatus").textContent="";if(dayOffer&&showDayOffer)$("dayOverlay").classList.remove("hidden");};
+$("clubQrClose").onclick=()=>{$("clubQrOverlay").classList.add("hidden");$("clubQrImage").innerHTML="";$("clubQrStatus").textContent="";if(dayOffer)$("dayOverlay").classList.remove("hidden");};
 function updateTransferQr(){const selected=document.querySelector('input[name="totemPayment"]:checked')?.value==="transferencia";const box=$("transferQrBox");box.style.display=selected?"block":"none";if(selected&&!box.dataset.ready&&window.QRCode){new QRCode($("transferQrImage"),{text:"https://mrfritascunco-art.github.io/menu_web/transferencia.html",width:220,height:220,colorDark:"#111111",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});box.dataset.ready="1";}else if(selected&&!window.QRCode){$("transferQrImage").textContent="No se pudo cargar el QR. Abre los datos bancarios desde el enlace inferior.";} }
 document.querySelectorAll('input[name="totemPayment"]').forEach(input=>input.addEventListener("change",updateTransferQr));
 let turnstileWidgetId=null;
@@ -199,7 +199,7 @@ function resetTotem({showDayOffer=true}={}){
  const payAtCashier=document.querySelector('input[name="totemPayment"][value="caja"]');
  if(payAtCashier)payAtCashier.checked=true;
  update();draw();refreshPaymentTotal();
- if(dayOffer)$("dayOverlay").classList.remove("hidden");
+ if(dayOffer&&showDayOffer)$("dayOverlay").classList.remove("hidden");
  lastInteraction=Date.now();hasCustomerActivity=false;
  window.scrollTo(0,0);
 }
