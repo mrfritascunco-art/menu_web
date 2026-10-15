@@ -27,7 +27,8 @@ public class MainActivity extends Activity {
       }
     });
     CookieManager.getInstance().setAcceptCookie(true);
-    web.loadUrl("https://mrfritascunco-art.github.io/menu_web/totem.html?test=1");
+    CookieManager.getInstance().setAcceptThirdPartyCookies(web,true);
+    web.loadUrl("https://mrfritascunco-art.github.io/menu_web/totem.html");
   }
   @Override public void onBackPressed() { if(web.canGoBack())web.goBack(); }
   @Override protected void onDestroy(){web.destroy();super.onDestroy();}
