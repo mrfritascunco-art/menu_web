@@ -25,7 +25,8 @@ const sections=[
 {name:"Promos",items:[["Combo para 2",17900,"2 smash clásicas + papas + salsas + 2 bebidas • Exclusivo consumo local","Combo de Hamburguesas y Papas.png"]]}
 ];
 let burgerExtras=[["Carne smash extra",2000],["Tocino crispy",1500],["Queso cheddar",1000],["Queso mantecoso",1000],["Champiñones",1000],["Cebolla caramelizada",800],["Cebolla morada",800],["Pepinillos",800],["Lechuga",800],["Tomate",800],["Palta",1500],["Cebolla",800],["Mayo casera",500],["Salsa BBQ",500],["Mostaza",0],["Ketchup",0]];
-let freeSauces=["Ketchup","Mostaza","BBQ","Ají"];
+let freeSauces=[];
+let removableByProduct={};
 let friesToppings=[["Carne mechada",2000],["Pollo",2000],["Tocino crispy",2500],["Salchichas",1500],["Queso fundido",1500],["Queso cheddar",1500],["Cebolla caramelizada",1000],["Pimentón",1000],["Champiñón",1000],["Choclo",1000],["Salsa premium",500]];
 
 
@@ -44,14 +45,15 @@ function optionsFor(p){
  const burger=["Smash Burgers","Arma tu Smash"].includes(p.category),fries=p.category==="Papas & Toppings";
  let html="";
  if(burger&&p.name!=="Base Smash"){
-  const ingredients=(p.description||"").split("•")[0].split(",").map(x=>x.trim()).filter(x=>x&&!/carne smash|^pan brioche/i.test(x));
+  const originalId=String(p.id).replace(/^day-/,"");
+  const ingredients=removableByProduct[originalId]||[];
   if(ingredients.length)html+='<div class="opt-section"><h3>➖ Quitar ingredientes (gratis)</h3>'+ingredients.map(x=>'<div class="opt-row"><label><input type="checkbox" class="removeOpt" value="'+safe(x)+'"> Sin '+safe(x)+'</label></div>').join("")+'</div>';
  }
  if(burger||fries){
   const extras=(fries?friesToppings:burgerExtras).filter(x=>x[2]!==false);
   html+='<div class="opt-section"><h3>'+(fries?"🍟 Agregar toppings":"🍔 Agregar extras")+'</h3>'+extras.map(x=>'<div class="opt-row"><label><input type="checkbox" class="extraOpt" value="'+safe(x[0])+'" data-price="'+Number(x[1])+'"> '+safe(x[0])+'</label><strong>'+(Number(x[1])?"+"+money(x[1]):"Gratis")+'</strong></div>').join("")+'</div>';
  }
- if(fries||p.name==="Base Smash")html+='<div class="opt-section"><h3>🥫 Salsas gratis</h3>'+freeSauces.map(x=>'<div class="opt-row"><label><input type="checkbox" class="sauceOpt" value="'+safe(x)+'"> '+safe(x)+'</label></div>').join("")+'</div>';
+ if((fries||p.name==="Base Smash")&&freeSauces.length)html+='<div class="opt-section"><h3>🥫 Salsas gratis</h3>'+freeSauces.map(x=>'<div class="opt-row"><label><input type="checkbox" class="sauceOpt" value="'+safe(x)+'"> '+safe(x)+'</label></div>').join("")+'</div>';
  if(p.name==="Bebida en lata")html+='<div class="opt-section"><h3>🥤 Elige sabor</h3>'+["Coca-Cola","Sprite","Fanta","Kem","Canada Dry","Limón Soda"].map((x,i)=>'<div class="opt-row"><label><input type="radio" name="drinkFlavor" value="'+safe(x)+'" '+(i===0?"checked":"")+'> '+safe(x)+'</label></div>').join("")+'</div>';
  return html;
 }
@@ -99,9 +101,10 @@ function reconcileCart(){
  if(changed){$("syncNote").textContent="⚠ Se actualizaron precios o productos del carrito. Revisa tu pedido.";$("syncNote").classList.add("warning")}
 }
 async function load(){if(refreshing)return;refreshing=true;try{const controls=await get("menu_control?select=product_id,product_name,description,image_url,price,available,burger_of_day,day_price");const [customResult,promosResult]=await Promise.allSettled([get("menu_custom?select=id,category,name,description,image_url,price,available"),get("menu_promotions?select=id,name,price,image_url,description&active=eq.true")]);const custom=customResult.status==="fulfilled"?customResult.value:[],promos=promosResult.status==="fulfilled"?promosResult.value:[];const by=Object.fromEntries(controls.map(x=>[x.product_id,x]));const cats=["Smash Burgers","Arma tu Smash","Papas & Toppings","Snacks","Bebidas","Promos"];products=sections.flatMap((s,i)=>s.items.map((p,j)=>{const id=i+"-"+j,o=by[id]||{};return{id,name:o.product_name||p[0],description:o.description||p[2],price:o.price==null?Number(p[1]):Number(o.price),image:o.image_url||p[3],category:cats[i],available:o.available!==false}})).filter(p=>p.available&&p.price>=0);products.push(...custom.filter(p=>p.available!==false).map(p=>({...p,id:"custom-"+p.id,image:p.image_url,category:p.category==="Hamburguesas"?"Smash Burgers":p.category==="Papas y toppings"?"Papas & Toppings":p.category==="Combos"?"Promos":p.category})));products.push(...promos.map(p=>({id:"promo-"+p.id,name:p.name,price:Number(p.price),image:p.image_url,description:p.description,category:"Promos"})));renderDayOffer(controls);await Promise.allSettled([
- get("menu_extras?select=name,price,available").then(rows=>{const by=Object.fromEntries(rows.map(x=>[x.name,x]));burgerExtras=burgerExtras.map(x=>by[x[0]]?[x[0],Number(by[x[0]].price),by[x[0]].available]:x)}),
- get("menu_papas_extras?select=name,price,available").then(rows=>{const by=Object.fromEntries(rows.map(x=>[x.name,x]));friesToppings=friesToppings.map(x=>by[x[0]]?[x[0],Number(by[x[0]].price),by[x[0]].available]:x)}),
- get("menu_sauces?select=name,available").then(rows=>{const by=Object.fromEntries(rows.map(x=>[x.name,x]));freeSauces=freeSauces.filter(x=>!by[x]||by[x].available)})
+ get("menu_extras?select=name,price,available").then(rows=>{const by=Object.fromEntries(rows.map(x=>[x.name,x]));burgerExtras=rows.filter(x=>x.available!==false).map(x=>[x.name,Number(x.price),true])}),
+ get("menu_papas_extras?select=name,price,available").then(rows=>{const by=Object.fromEntries(rows.map(x=>[x.name,x]));friesToppings=rows.filter(x=>x.available!==false).map(x=>[x.name,Number(x.price),true])}),
+ get("menu_sauces?select=name,available").then(rows=>{freeSauces=rows.filter(x=>x.available!==false).map(x=>x.name)}),
+ get("totem_removable_ingredients?select=product_id,ingredient").then(rows=>{const next={};for(const row of rows){(next[row.product_id]??=[]).push(row.ingredient)}removableByProduct=next})
  ]);reconcileCart();lastMenuSync=Date.now();$("syncNote").textContent="✓ Carta actualizada automáticamente";$("syncNote").classList.remove("warning");if(!$("customOverlay").classList.contains("hidden")){ /* preserve customer selections */ }else{draw()}drawUpsells()}catch(e){$("syncNote").textContent="⚠ Sin conexión para actualizar precios. Revisa antes de cobrar.";$("syncNote").classList.add("warning");if(!products.length)$("grid").innerHTML='<p>No se pudo cargar el menú. Comprueba la conexión.</p>';console.error(e)}finally{refreshing=false}}
 document.addEventListener("click",e=>{const cat=e.target.closest("[data-cat]"),add=e.target.closest("[data-add]"),plus=e.target.closest("[data-plus]"),minus=e.target.closest("[data-minus]");if(cat){category=cat.dataset.cat;draw()}if(add){const p=products.find(x=>x.id===add.dataset.add);if(p){if(optionsFor(p))openCustom(p);else addLine(p)}}const ups=e.target.closest("[data-upsell-add]");if(ups){const p=products.find(x=>x.id===ups.dataset.upsellAdd);if(p){if(optionsFor(p)){$("overlay").classList.add("hidden");openCustom(p)}else addLine(p)}}if(plus&&cart[plus.dataset.plus]){cart[plus.dataset.plus].qty++;update()}if(minus&&cart[minus.dataset.minus]){const x=cart[minus.dataset.minus];x.qty--;if(!x.qty)delete cart[x.id];update()}});
 let turnstileWidgetId=null;
