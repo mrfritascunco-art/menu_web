@@ -119,7 +119,7 @@ function testPayload(){
  if(!lines.length)throw Error("El carrito está vacío.");
  const items=lines.map(line=>{
   const id=line.id.split("|")[0];
-  if(!/^\d+-\d+$/.test(id))throw Error("Para esta primera prueba usa productos normales, sin Burger del Día ni promociones.");
+  if(!/^(?:[0-5]-\d+|day-[0-5]-\d+|custom-[0-9a-fA-F-]{36}|promo-\d+)$/.test(id))throw Error("Este producto no tiene un identificador válido.");
   return {id,quantity:line.qty,extras:(line.extras||[]).map(x=>({name:x.name})),removed:line.removed||[],sauces:line.sauces||[],...(line.flavor?{flavor:line.flavor}:{})};
  });
  const subtotal=lines.reduce((sum,line)=>sum+line.qty*line.price,0);
