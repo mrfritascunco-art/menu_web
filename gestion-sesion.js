@@ -1,5 +1,12 @@
 /* Sesión compartida de Mr. Fritas Gestión. No almacena contraseñas. */
 window.MFSession={
+  save(auth,remember=true){
+    if(!auth?.access_token||!auth?.refresh_token)return;
+    const key="mf_gestion_session";
+    const store=remember?localStorage:sessionStorage;
+    (remember?sessionStorage:localStorage).removeItem(key);
+    store.setItem(key,JSON.stringify({access_token:auth.access_token,refresh_token:auth.refresh_token,expires_at:Date.now()+Number(auth.expires_in||3600)*1000,email:auth.user?.email||""}));
+  },
   async get(role){
     const key="mf_gestion_session";
     let store=localStorage.getItem(key)?localStorage:sessionStorage;
@@ -12,7 +19,7 @@ window.MFSession={
     const apiKey="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
     if(Number(session.expires_at||0)<Date.now()+90000){
       const response=await fetch(url+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{"apikey":apiKey,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:session.refresh_token})});
-      if(!response.ok)throw Error("Sesión vencida");
+      if(!response.ok){store.removeItem(key);return null}
       const refreshed=await response.json();
       session={...session,access_token:refreshed.access_token,refresh_token:refreshed.refresh_token,expires_at:Date.now()+Number(refreshed.expires_in||3600)*1000,email:refreshed.user?.email||session.email};
       store.setItem(key,JSON.stringify(session));
