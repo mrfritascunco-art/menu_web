@@ -139,7 +139,7 @@ $("submitTotemOrder").onclick=async()=>{
   const result=await response.json();
   if(!response.ok||!result.success)throw Error(result.error||"No se pudo crear el pedido.");
   const eligibleForClub=Number(result.products_total)>=15000;
-  resetTotem();
+  resetTotem({showDayOffer:!eligibleForClub});
   if(eligibleForClub)await showClubQrForOrder(result);
   else alert("🍔 Pedido #"+result.order_number+" registrado. Total de productos: "+money(Number(result.products_total)||0)+". Club Fritas acumula sellos desde $15.000 en productos (sin propina). Paga en Caja para continuar.");
  }catch(e){alert(e.message||"Error enviando pedido.");if(window.turnstile&&turnstileWidgetId!==null)window.turnstile.reset(turnstileWidgetId)}
@@ -171,7 +171,7 @@ function getFreshQrTurnstileToken(){
   window.turnstile.render(container,{sitekey:"0x4AAAAAAFXsTNAHqzQoVgWC",theme:"light",callback:token=>{if(!done){done=true;clearTimeout(timeout);resolve(token);}}});
  });
 }
-$("clubQrClose").onclick=()=>{$("clubQrOverlay").classList.add("hidden");$("clubQrImage").innerHTML="";$("clubQrStatus").textContent="";};
+$("clubQrClose").onclick=()=>{$("clubQrOverlay").classList.add("hidden");$("clubQrImage").innerHTML="";$("clubQrStatus").textContent="";if(dayOffer&&showDayOffer)$("dayOverlay").classList.remove("hidden");};
 function updateTransferQr(){const selected=document.querySelector('input[name="totemPayment"]:checked')?.value==="transferencia";const box=$("transferQrBox");box.style.display=selected?"block":"none";if(selected&&!box.dataset.ready&&window.QRCode){new QRCode($("transferQrImage"),{text:"https://mrfritascunco-art.github.io/menu_web/transferencia.html",width:220,height:220,colorDark:"#111111",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});box.dataset.ready="1";}else if(selected&&!window.QRCode){$("transferQrImage").textContent="No se pudo cargar el QR. Abre los datos bancarios desde el enlace inferior.";} }
 document.querySelectorAll('input[name="totemPayment"]').forEach(input=>input.addEventListener("change",updateTransferQr));
 let turnstileWidgetId=null;
@@ -190,7 +190,7 @@ let hasCustomerActivity=false;
   hasCustomerActivity=true;
  },{passive:true});
 });
-function resetTotem(){
+function resetTotem({showDayOffer=true}={}){
  cart={};selected=null;category="Smash Burgers";
  ["customOverlay","overlay","paymentOverlay"].forEach(id=>$(id).classList.add("hidden"));
  $("tipCustomAmount").value="";
