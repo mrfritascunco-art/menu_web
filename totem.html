@@ -104,5 +104,34 @@ async function load(){if(refreshing)return;refreshing=true;try{const controls=aw
  get("menu_sauces?select=name,available").then(rows=>{const by=Object.fromEntries(rows.map(x=>[x.name,x]));freeSauces=freeSauces.filter(x=>!by[x]||by[x].available)})
  ]);reconcileCart();lastMenuSync=Date.now();$("syncNote").textContent="✓ Carta actualizada automáticamente";$("syncNote").classList.remove("warning");if(!$("customOverlay").classList.contains("hidden")){ /* preserve customer selections */ }else{draw()}drawUpsells()}catch(e){$("syncNote").textContent="⚠ Sin conexión para actualizar precios. Revisa antes de cobrar.";$("syncNote").classList.add("warning");if(!products.length)$("grid").innerHTML='<p>No se pudo cargar el menú. Comprueba la conexión.</p>';console.error(e)}finally{refreshing=false}}
 document.addEventListener("click",e=>{const cat=e.target.closest("[data-cat]"),add=e.target.closest("[data-add]"),plus=e.target.closest("[data-plus]"),minus=e.target.closest("[data-minus]");if(cat){category=cat.dataset.cat;draw()}if(add){const p=products.find(x=>x.id===add.dataset.add);if(p){if(optionsFor(p))openCustom(p);else addLine(p)}}const ups=e.target.closest("[data-upsell-add]");if(ups){const p=products.find(x=>x.id===ups.dataset.upsellAdd);if(p){if(optionsFor(p)){$("overlay").classList.add("hidden");openCustom(p)}else addLine(p)}}if(plus&&cart[plus.dataset.plus]){cart[plus.dataset.plus].qty++;update()}if(minus&&cart[minus.dataset.minus]){const x=cart[minus.dataset.minus];x.qty--;if(!x.qty)delete cart[x.id];update()}});
-$("skipDayBurger").onclick=()=>{$("dayOverlay").classList.add("hidden")};$("orderDayBurger").onclick=()=>{if(!dayOffer)return;$("dayOverlay").classList.add("hidden");if(optionsFor(dayOffer))openCustom(dayOffer);else addLine(dayOffer)};$("clubOptIn").onchange=()=>{$("clubPhoneBox").classList.toggle("show",$("clubOptIn").checked);if(!$("clubOptIn").checked)$("clubPhone").value=""};$("openCart").onclick=()=>{$("overlay").classList.remove("hidden");update();drawUpsells()};function refreshPaymentTotal(){const subtotal=Object.values(cart).reduce((s,x)=>s+x.qty*x.price,0);const choice=document.querySelector('input[name="tipChoice"]:checked')?.value||"0";$("tipCustomWrap").style.display=choice==="custom"?"block":"none";const tip=choice==="10"?Math.round(subtotal*.1):choice==="custom"?Math.max(0,Math.round(Number($("tipCustomAmount").value)||0)):0;$("paymentSubtotal").textContent=money(subtotal);$("paymentTip").textContent=money(tip);$("paymentTotal").textContent=money(subtotal+tip)}document.querySelectorAll('input[name="tipChoice"]').forEach(x=>x.addEventListener("change",refreshPaymentTotal));$("tipCustomAmount").addEventListener("input",refreshPaymentTotal);$("goPayment").onclick=()=>{if(!Object.keys(cart).length)return alert("Agrega un producto primero.");refreshPaymentTotal();$("overlay").classList.add("hidden");$("paymentOverlay").classList.remove("hidden")};$("backPayment").onclick=()=>{$("paymentOverlay").classList.add("hidden");$("overlay").classList.remove("hidden")};$("closeCart").onclick=()=>{$("overlay").classList.add("hidden")};$("clearCart").onclick=()=>{cart={};update()};load();setInterval(()=>{if(document.visibilityState==="visible")load()},30000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&Date.now()-lastMenuSync>15000)load()});
+$("skipDayBurger").onclick=()=>{$("dayOverlay").classList.add("hidden")};$("orderDayBurger").onclick=()=>{if(!dayOffer)return;$("dayOverlay").classList.add("hidden");if(optionsFor(dayOffer))openCustom(dayOffer);else addLine(dayOffer)};$("clubOptIn").onchange=()=>{$("clubPhoneBox").classList.toggle("show",$("clubOptIn").checked);if(!$("clubOptIn").checked)$("clubPhone").value=""};$("openCart").onclick=()=>{$("overlay").classList.remove("hidden");update();drawUpsells()};function refreshPaymentTotal(){const subtotal=Object.values(cart).reduce((s,x)=>s+x.qty*x.price,0);const choice=document.querySelector('input[name="tipChoice"]:checked')?.value||"0";$("tipCustomWrap").style.display=choice==="custom"?"block":"none";const tip=choice==="10"?Math.round(subtotal*.1):choice==="custom"?Math.max(0,Math.round(Number($("tipCustomAmount").value)||0)):0;$("paymentSubtotal").textContent=money(subtotal);$("paymentTip").textContent=money(tip);$("paymentTotal").textContent=money(subtotal+tip)}document.querySelectorAll('input[name="tipChoice"]').forEach(x=>x.addEventListener("change",refreshPaymentTotal));$("tipCustomAmount").addEventListener("input",refreshPaymentTotal);$("goPayment").onclick=()=>{if(!Object.keys(cart).length)return alert("Agrega un producto primero.");refreshPaymentTotal();$("overlay").classList.add("hidden");$("paymentOverlay").classList.remove("hidden")};$("backPayment").onclick=()=>{$("paymentOverlay").classList.add("hidden");$("overlay").classList.remove("hidden")};$("closeCart").onclick=()=>{$("overlay").classList.add("hidden")};$("clearCart").onclick=()=>{cart={};update()};// Privacidad en pantalla compartida: borrar pedidos abandonados tras 4 minutos.
+const IDLE_MS=4*60*1000;
+let lastInteraction=Date.now();
+let hasCustomerActivity=false;
+["pointerdown","keydown","touchstart"].forEach(eventName=>{
+ document.addEventListener(eventName,()=>{
+  lastInteraction=Date.now();
+  hasCustomerActivity=true;
+ },{passive:true});
+});
+function resetTotem(){
+ cart={};selected=null;category="Smash Burgers";
+ ["customOverlay","overlay","paymentOverlay"].forEach(id=>$(id).classList.add("hidden"));
+ $("clubOptIn").checked=false;
+ $("clubPhone").value="";
+ $("clubPhoneBox").classList.remove("show");
+ $("tipCustomAmount").value="";
+ const noTip=document.querySelector('input[name="tipChoice"][value="0"]');
+ if(noTip)noTip.checked=true;
+ const payAtCashier=document.querySelector('input[name="paymentMethod"][value="caja"]');
+ if(payAtCashier)payAtCashier.checked=true;
+ update();draw();refreshPaymentTotal();
+ if(dayOffer)$("dayOverlay").classList.remove("hidden");
+ lastInteraction=Date.now();hasCustomerActivity=false;
+ window.scrollTo(0,0);
+}
+setInterval(()=>{
+ if(document.visibilityState==="visible"&&hasCustomerActivity&&Date.now()-lastInteraction>=IDLE_MS)resetTotem();
+},10000);
+load();setInterval(()=>{if(document.visibilityState==="visible")load()},30000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&Date.now()-lastMenuSync>15000)load()});
 </script></body></html>
