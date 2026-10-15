@@ -21,7 +21,6 @@ const qrPanel=document.getElementById("qrPanel");
 const qrCardToken=location.hash.startsWith("#card=")?location.hash.slice(6):(localStorage.getItem("mrFritasClubCardToken")||"");
 if(/^[a-f0-9]{64}$/.test(qrCardToken))qrPanel.classList.remove("hidden");
 let qrStream=null,qrRunning=false;
-function stopQrCamera(){qrRunning=false;if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}document.getElementById("qrCamera").classList.add("hidden");}
 function parseTotemQr(value){
  const v=value.trim();
  if(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v))return v;
@@ -43,16 +42,36 @@ async function linkQr(value){
 document.getElementById("linkQrManual").onclick=()=>linkQr(document.getElementById("qrManual").value);
 document.getElementById("scanTotemQr").onclick=async()=>{
  const status=document.getElementById("qrStatus");
- if(!("BarcodeDetector" in window)){status.className="error";status.textContent="Tu navegador no permite escanear desde esta página. Puedes ingresar el código manualmente.";return;}
+ const button=document.getElementById("scanTotemQr");
+ if(qrRunning){stopQrCamera();button.textContent="📷 Escanear QR del tótem";return;}
+ if(!window.Html5Qrcode){status.className="error";status.textContent="No se cargó el lector. Comprueba tu conexión y vuelve a abrir la página.";return;}
+ const video=document.getElementById("qrCamera");
+ video.classList.add("hidden");
+ if(!document.getElementById("qrReader")){
+  const reader=document.createElement("div");reader.id="qrReader";reader.style.cssText="width:100%;margin-top:12px;overflow:hidden;border-radius:12px";
+  video.after(reader);
+ }
  try{
-  qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});
-  const video=document.getElementById("qrCamera");video.srcObject=qrStream;video.classList.remove("hidden");await video.play();
-  const detector=new BarcodeDetector({formats:["qr_code"]});qrRunning=true;
-  status.className="muted";status.textContent="Apunta la cámara al QR del tótem.";
-  const scan=async()=>{if(!qrRunning)return;try{const codes=await detector.detect(video);if(codes.length){await linkQr(codes[0].rawValue);return;}}catch{}if(qrRunning)requestAnimationFrame(scan);};requestAnimationFrame(scan);
- }catch(e){stopQrCamera();status.className="error";status.textContent="No se pudo abrir la cámara. Revisa los permisos o ingresa el código manualmente.";}
+  qrRunning=true;button.textContent="✕ Cerrar cámara";
+  status.className="muted";status.textContent="Permite el acceso a la cámara y apunta al QR del tótem.";
+  window.clubQrScanner=new Html5Qrcode("qrReader",{verbose:false});
+  await window.clubQrScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:220,height:220}},async value=>{
+   if(!qrRunning)return;
+   await stopQrCamera();button.textContent="📷 Escanear QR del tótem";
+   await linkQr(value);
+  },()=>{});
+ }catch(e){
+  await stopQrCamera();button.textContent="📷 Escanear QR del tótem";
+  status.className="error";status.textContent="No se pudo abrir la cámara. Revisa los permisos de Safari en Ajustes y vuelve a intentarlo.";
+ }
 };
-window.addEventListener("pagehide",stopQrCamera);
+async function stopQrCamera(){
+ qrRunning=false;
+ if(window.clubQrScanner){const scanner=window.clubQrScanner;window.clubQrScanner=null;try{await scanner.stop();}catch{}try{scanner.clear();}catch{}}
+ if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}
+ document.getElementById("qrCamera").classList.add("hidden");
+}
+window.addEventListener("pagehide",()=>{void stopQrCamera();});
 
 document.getElementById("clubRequest").addEventListener("submit",async function(e){
 e.preventDefault();
@@ -81,4 +100,4 @@ try{
 }catch(err){msg.textContent=err.message+" No se ha guardado la solicitud. Intenta más tarde.";msg.className="error";btn.disabled=false}
 
 });
-</script></body></html>
+</script><script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script></body></html>
