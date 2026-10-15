@@ -1,7 +1,7 @@
 plugins { id 'com.android.application' }
 
 android { namespace 'cl.mrfritas.totem'; compileSdk 35
- defaultConfig { applicationId 'cl.mrfritas.totem'; minSdk 24; targetSdk 28; versionCode 1; versionName '1.0-prueba' }
+ defaultConfig { applicationId 'cl.mrfritas.totem'; minSdk 24; targetSdk 28; versionCode 1; versionName '1.0.0' }
  buildTypes { release { minifyEnabled false } }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
