@@ -8,6 +8,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 4
 .brand{font-weight:1000;font-size:clamp(26px,3.2vw,68px);letter-spacing:-1px;color:#ffcf00}.brand span{color:white}.topline{color:#e2e2e2;font-size:clamp(14px,1.45vw,28px);font-weight:bold}
 main{min-height:0;display:grid;grid-template-columns:51% 49%;align-items:center;padding:2vh 5vw;gap:2vw}
 .copy{min-width:0}.tag{display:inline-block;color:#171717;background:#ffd000;padding:.55em 1em;border-radius:100px;font-size:clamp(13px,1.25vw,24px);font-weight:900;letter-spacing:1px}
+.day-banner{display:none;margin-top:1.3vh;background:#e62626;color:white;border-radius:12px;padding:.7vh 1.2vw;font-size:clamp(17px,2vw,38px);font-weight:1000;letter-spacing:.04em;box-shadow:0 0 30px #e6262655;transform:rotate(-1deg);width:max-content;max-width:100%}.day-banner.active{display:block}.regular-price{display:none;font-size:clamp(18px,2vw,40px);color:#bdbdbd;margin-top:1vh;font-weight:700}.regular-price.active{display:block}.regular-price s{color:#f18d8d;text-decoration-thickness:3px}.day-price-label{font-size:clamp(14px,1.5vw,28px);color:#ffd000;font-weight:900;margin-top:1vh;display:none}.day-price-label.active{display:block}
 h1{font-size:clamp(35px,5.4vw,110px);line-height:.98;letter-spacing:-.05em;margin:2.5vh 0 1.8vh;overflow-wrap:anywhere}
 .desc{font-size:clamp(15px,1.55vw,32px);line-height:1.35;color:#d6d6d6;max-width:46vw;max-height:18vh;overflow:hidden}
 .price{font-size:clamp(50px,6.2vw,128px);font-weight:1000;color:#ffcf00;margin-top:2vh;letter-spacing:-.055em}
@@ -17,7 +18,7 @@ footer{border-top:3px solid #ffcf00;background:#181818;display:flex;align-items:
 @media(max-aspect-ratio:1.4){main{grid-template-columns:53% 47%}h1{font-size:5vw}.desc{font-size:1.7vw}}
 </style></head><body><div class="screen">
 <header><div class="brand">MR FRITAS <span>BURGER CO.</span></div><div class="topline">🍔 SMASH BURGERS · CUNCO</div></header>
-<main><section class="copy"><div class="tag" id="tag">🍔 NUESTRAS BURGERS</div><h1 id="name">Cargando menú…</h1><div class="desc" id="desc">Carne fresca, jamás congelada.</div><div class="price" id="price"></div></section><div class="photo" id="photo"><span class="placeholder">🍔</span></div></main>
+<main><section class="copy"><div class="tag" id="tag">🍔 NUESTRAS BURGERS</div><div class="day-banner" id="dayBanner">🔥 ¡OFERTA BURGER DEL DÍA! 🔥</div><h1 id="name">Cargando menú…</h1><div class="desc" id="desc">Carne fresca, jamás congelada.</div><div class="regular-price" id="regularPrice"></div><div class="day-price-label" id="dayPriceLabel">PRECIO ESPECIAL HOY</div><div class="price" id="price"></div></section><div class="photo" id="photo"><span class="placeholder">🍔</span></div></main>
 <footer><div class="ready-label">🔔 PEDIDOS LISTOS<br>PARA RETIRAR</div><div class="ready-numbers" id="ready"><span class="empty">Los números aparecerán aquí cuando Cocina los marque como listos.</span></div></footer>
 </div>
 <script>
@@ -30,7 +31,7 @@ let slides=[],current=0;
 const money=n=>"$"+Number(n).toLocaleString("es-CL");
 async function get(path){const r=await fetch(BASE+"/rest/v1/"+path,{headers:{apikey:KEY},cache:"no-store"});if(!r.ok)throw Error("Menú no disponible");return r.json()}
 function show(){if(!slides.length){$("name").textContent="PRONTO NUEVAS BURGERS";$("desc").textContent="Mr Fritas Burger Co.";return}
-const s=slides[current%slides.length];$("tag").textContent=s.tag;$("name").textContent=s.name;$("desc").textContent=s.description||"Preparada al momento con nuestra calidad Mr Fritas.";$("price").textContent=money(s.price);
+const s=slides[current%slides.length];$("tag").textContent=s.tag;$("name").textContent=s.name;$("desc").textContent=s.description||"Preparada al momento con nuestra calidad Mr Fritas.";$("price").textContent=money(s.price);const isDay=s.isDay===true;$("dayBanner").classList.toggle("active",isDay);$("regularPrice").classList.toggle("active",isDay);$("dayPriceLabel").classList.toggle("active",isDay);$("regularPrice").innerHTML=isDay?"Precio normal: <s>"+money(s.regularPrice)+"</s>":"";
 $("photo").replaceChildren();if(s.image){const img=document.createElement("img");img.src=s.image;img.alt=s.name;img.onerror=()=>{console.warn("Foto no disponible:",img.src);$("photo").textContent="🍔";};$("photo").append(img)}else $("photo").textContent="🍔"}
 async function refreshMenu(){try{
 const [controls,custom,promos]=await Promise.all([
@@ -39,8 +40,8 @@ get("menu_custom?select=id,category,name,description,image_url,price,available")
 get("menu_promotions?select=id,name,description,image_url,price,active&active=eq.true")]);
 const next=[];
 const day=controls.find(x=>x.burger_of_day===true&&x.available!==false&&x.day_price!=null&&/^0-\d+$/.test(x.product_id));
-if(day)next.push({name:day.product_name,description:day.description,image:imageFor(day.product_id,day.image_url),price:day.day_price,tag:"🔥 BURGER DEL DÍA"});
-next.push(...controls.filter(x=>x.available!==false&&/^[01]-\d+$/.test(x.product_id)&&x.price!=null).map(x=>({name:x.product_name,description:x.description,image:imageFor(x.product_id,x.image_url),price:x.price,tag:"🍔 SMASH BURGERS"})));
+if(day)next.push({name:day.product_name,description:day.description,image:imageFor(day.product_id,day.image_url),price:day.day_price,regularPrice:day.price,isDay:true,tag:"🔥 BURGER DEL DÍA"});
+next.push(...controls.filter(x=>x.available!==false&&/^[01]-\d+$/.test(x.product_id)&&x.price!=null&&(!day||x.product_id!==day.product_id)).map(x=>({name:x.product_name,description:x.description,image:imageFor(x.product_id,x.image_url),price:x.price,tag:"🍔 SMASH BURGERS"})));
 next.push(...custom.filter(x=>x.available!==false&&x.category==="Hamburguesas").map(x=>({name:x.name,description:x.description,image:imageFor(null,x.image_url),price:x.price,tag:"🍔 NUESTRAS BURGERS"})));
 next.push(...promos.map(x=>({name:x.name,description:x.description,image:imageFor(null,x.image_url),price:x.price,tag:"🔥 PROMOCIONES"})));
 slides=next.filter(x=>x.name&&Number.isFinite(Number(x.price))&&Number(x.price)>=0);if(current>=slides.length)current=0;show()
