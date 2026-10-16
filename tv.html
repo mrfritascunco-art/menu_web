@@ -24,7 +24,7 @@ footer{border-top:3px solid #ffcf00;background:#181818;display:flex;align-items:
 const BASE="https://oiybkvtamrhjfcyfayes.supabase.co",KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
 const $=id=>document.getElementById(id);
 const FALLBACK_IMAGES=["peanut.jpg","cheese_burger.jpg","bacon.jpg","champi.png","italiana.jpg","fresh.jpg","cuarto_de_kilo.png","oklahoma.png","cuarto_de_libra.png","whopper.png","clasica.jpg","Hamburguesa doble con queso y pepinillos.png","cheese_bacon.jpg"];
-function imageFor(id,url){if(url)return url;const m=/^0-(\\d+)$/.exec(id||"");return m?FALLBACK_IMAGES[Number(m[1])]||"":"";}
+function imageFor(id,url){if(url)return url;const m=/^0-(\d+)$/.exec(id||"");return m?FALLBACK_IMAGES[Number(m[1])]||"":"";}
 let slides=[],current=0;
 const money=n=>"$"+Number(n).toLocaleString("es-CL");
 async function get(path){const r=await fetch(BASE+"/rest/v1/"+path,{headers:{apikey:KEY},cache:"no-store"});if(!r.ok)throw Error("Menú no disponible");return r.json()}
