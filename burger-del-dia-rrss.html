@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Burger del Día · Mr Fritas</title><style>*{box-sizing:border-box}body{margin:0;background:#151515;color:#fff;font-family:Arial,sans-serif;text-align:center}main{max-width:500px;margin:auto;padding:18px}h1{color:#ffcf00;font-size:25px}p{color:#ddd;line-height:1.4}canvas{display:block;width:100%;max-width:360px;margin:15px auto;border-radius:12px;box-shadow:0 8px 30px #0008}button{background:#ffcf00;color:#111;border:0;padding:15px 20px;border-radius:12px;font-weight:900;font-size:17px;cursor:pointer;width:100%;margin:5px 0}#msg{min-height:24px}a{color:#ffcf00}</style></head><body><main><h1>🍔 BURGER DEL DÍA</h1><p>Historia lista para Instagram, Facebook y WhatsApp. Se actualiza con la Burger del Día configurada en tu menú.</p><label style="display:block;text-align:left;font-weight:800">📍 Dirección del local<input id="address" value="Cunco, Región de La Araucanía" style="display:block;width:100%;margin:8px 0 14px;padding:12px;border-radius:10px;border:1px solid #777;font-size:16px" maxlength="100"></label><canvas id="poster" width="1080" height="1920"></canvas><button id="download">📸 DESCARGAR IMAGEN PNG</button><p id="msg">Cargando Burger del Día…</p><a href="admin.html">← Volver al administrador</a></main><script>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Burger del Día · Mr Fritas</title><style>*{box-sizing:border-box}body{margin:0;background:#151515;color:#fff;font-family:Arial,sans-serif;text-align:center}main{max-width:500px;margin:auto;padding:18px}h1{color:#ffcf00;font-size:25px}p{color:#ddd;line-height:1.4}canvas{display:block;width:100%;max-width:360px;margin:15px auto;border-radius:12px;box-shadow:0 8px 30px #0008}button{background:#ffcf00;color:#111;border:0;padding:15px 20px;border-radius:12px;font-weight:900;font-size:17px;cursor:pointer;width:100%;margin:5px 0}#msg{min-height:24px}a{color:#ffcf00}</style></head><body><main><h1>🍔 BURGER DEL DÍA</h1><p>Historia lista para Instagram, Facebook y WhatsApp. Se actualiza con la Burger del Día configurada en tu menú.</p><label style="display:block;text-align:left;font-weight:800">📍 Dirección del local<input id="address" value="Prat 652, Cunco" style="display:block;width:100%;margin:8px 0 14px;padding:12px;border-radius:10px;border:1px solid #777;font-size:16px" maxlength="100"></label><canvas id="poster" width="1080" height="1920"></canvas><button id="download">📸 DESCARGAR IMAGEN PNG</button><p id="msg">Cargando Burger del Día…</p><a href="admin.html">← Volver al administrador</a></main><script>
 const base="https://oiybkvtamrhjfcyfayes.supabase.co",key="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
 const images=["peanut.jpg","cheese_burger.jpg","bacon.jpg","champi.png","italiana.jpg","fresh.jpg","cuarto_de_kilo.png","oklahoma.png","cuarto_de_libra.png","whopper.png","clasica.jpg","Hamburguesa doble con queso y pepinillos.png","cheese_bacon.png"];
 const canvas=document.getElementById("poster"),ctx=canvas.getContext("2d"),msg=document.getElementById("msg");
@@ -28,18 +28,20 @@ async function draw(b){
  if(img){const s=Math.min(900/img.width,680/img.height);const w=img.width*s,h=img.height*s;ctx.save();ctx.shadowColor="#000";ctx.shadowBlur=45;ctx.drawImage(img,540-w/2,460+(690-h)/2,w,h);ctx.restore()}else centered("🍔",850,180);
  const name=String(b.product_name||"SMASH BURGER").toLocaleUpperCase("es-CL");centered(name,1210,fit(name,980,83),"#fff");
  const ingredients=(index?ingredientsById[+index[1]]:"")||b.description||"Preparada al momento con carne fresca";
- wrapped(ingredients,540,1285,945,47,36,"#f0e9d8",3);
+ centered("— INGREDIENTES —",1258,28,"#ffcf00");
+ wrapped(ingredients,540,1307,945,43,33,"#f0e9d8",3);
  const normal=Number(b.price),special=Number(b.day_price??b.price);
  ctx.fillStyle="#ddd";ctx.textAlign="center";ctx.font="700 41px Arial";ctx.fillText("PRECIO NORMAL",310,1458);
  ctx.font="700 58px Arial";const normalText="$"+normal.toLocaleString("es-CL");ctx.fillText(normalText,310,1528);
  const width=ctx.measureText(normalText).width;ctx.strokeStyle="#f36565";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(310-width/2-8,1506);ctx.lineTo(310+width/2+8,1506);ctx.stroke();
  roundRect(540,1400,480,170,30,"#ffcf00");
  ctx.fillStyle="#161616";ctx.font="900 32px Arial";ctx.fillText("HOY",780,1446);
- ctx.font="900 105px Arial";ctx.fillText("$"+special.toLocaleString("es-CL"),780,1543);
+ const specialText="$"+special.toLocaleString("es-CL");ctx.font="900 "+fit(specialText,445,102)+"px Arial";ctx.fillText(specialText,780,1543);
  ctx.fillStyle="#ffcf00";ctx.fillRect(70,1605,940,3);
- centered("📲 +56 9 8833 1113",1687,60,"#fff");
- wrapped("📍 "+(document.getElementById("address").value.trim()||"Cunco, Región de La Araucanía"),540,1762,950,47,38,"#ffcf00",2);
- centered("CARNE FRESCA · JAMÁS CONGELADA",1860,32,"#fff",800);
+ centered("PEDIDOS Y CONSULTAS",1658,28,"#ffcf00");
+ centered("WHATSAPP  +56 9 8833 1113",1713,53,"#fff");
+ wrapped("📍 "+(document.getElementById("address").value.trim()||"Prat 652, Cunco"),540,1791,950,47,40,"#ffcf00",2);
+ centered("CARNE FRESCA · JAMÁS CONGELADA",1870,29,"#fff",800);
 }
 async function refresh(){try{const r=await fetch(base+"/rest/v1/menu_control?select=product_id,product_name,image_url,description,price,day_price,burger_of_day,available&burger_of_day=eq.true&limit=1",{headers:{apikey:key},cache:"no-store"});if(!r.ok)throw Error("No se pudo consultar el menú");const a=await r.json();if(!a.length)throw Error("No hay Burger del Día seleccionada");await draw(a[0]);msg.textContent="✅ Imagen lista para descargar"}catch(e){msg.textContent="⚠️ "+e.message}}
 document.getElementById("address").addEventListener("input",()=>{if(currentBurger)draw(currentBurger)});
