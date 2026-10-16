@@ -25,9 +25,11 @@ footer{border-top:3px solid #ffcf00;background:#181818;display:flex;align-items:
 const BASE="https://oiybkvtamrhjfcyfayes.supabase.co",KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
 const $=id=>document.getElementById(id);
 const FALLBACK_IMAGES=["peanut.jpg","cheese_burger.jpg","bacon.jpg","champi.png","italiana.jpg","fresh.jpg","cuarto_de_kilo.png","oklahoma.png","cuarto_de_libra.png","whopper.png","clasica.jpg","Hamburguesa doble con queso y pepinillos.png","cheese_bacon.jpg"];
+const MENU_BURGER_INGREDIENTS=["Carne smash, queso cheddar, tocino, mantequilla de maní • Incluye papitas","Carne smash, pepinillos, mayo casera","Carne smash, cheddar, tocino crispy, cebolla caramelizada, salsa BBQ, mayo casera • Incluye papitas","Carne smash, champiñones, cebolla caramelizada, queso mantecoso, mayo casera • Incluye papitas","Carne smash, tomate, palta, mayo casera • Incluye papitas","Carne smash, lechuga, cebolla morada, queso cheddar, mayo casera • Incluye papitas","3 carnes smash (255 g), triple cheddar, doble tocino crispy, cebolla caramelizada, salsa BBQ, mayo casera • Incluye papitas","Carne smash estilo Oklahoma con cebolla, pepinillo, queso mantecoso, mostaza • Incluye papitas","Carne smash (120 g), doble cheddar, cebolla, ketchup, mostaza, pepinillo","Carne smash, lechuga, cebolla, tomate, mayo casera","Carne smash, queso cheddar, cebolla morada, pepinillos, mayonesa • Incluye papitas","Doble carne smash, doble queso cheddar, cebolla morada, pepinillos, mayo casera","Carne smash, queso cheddar, tocino y mayonesa Kraft • Incluye papas fritas"];
 const MENU_IMAGE_ROOT="https://mrfritascunco-art.github.io/menu_web/";
-function imageFor(id,url){const m=/^0-(\\d+)$/.exec(id||"");const filename=m?FALLBACK_IMAGES[Number(m[1])]||"":"";const chosen=url||filename;return chosen?new URL(chosen,MENU_IMAGE_ROOT).href:"";}
+function imageFor(id,url){const m=/^0-(\d+)$/.exec(id||"");const filename=m?FALLBACK_IMAGES[Number(m[1])]||"":"";const chosen=url||filename;return chosen?new URL(chosen,MENU_IMAGE_ROOT).href:"";}
 let slides=[],current=0;
+function ingredientsFor(id,description){const m=/^0-(\d+)$/.exec(id||"");return description|| (m?MENU_BURGER_INGREDIENTS[Number(m[1])]:"")||"";}
 const money=n=>"$"+Number(n).toLocaleString("es-CL");
 async function get(path){const r=await fetch(BASE+"/rest/v1/"+path,{headers:{apikey:KEY},cache:"no-store"});if(!r.ok)throw Error("Menú no disponible");return r.json()}
 function show(){if(!slides.length){$("name").textContent="PRONTO NUEVAS BURGERS";$("desc").textContent="Mr Fritas Burger Co.";return}
@@ -40,8 +42,8 @@ get("menu_custom?select=id,category,name,description,image_url,price,available")
 get("menu_promotions?select=id,name,description,image_url,price,active&active=eq.true")]);
 const next=[];
 const day=controls.find(x=>x.burger_of_day===true&&x.available!==false&&x.day_price!=null&&/^0-\d+$/.test(x.product_id));
-if(day)next.push({name:day.product_name,description:day.description,image:imageFor(day.product_id,day.image_url),price:day.day_price,regularPrice:day.price,isDay:true,tag:"🔥 BURGER DEL DÍA"});
-next.push(...controls.filter(x=>x.available!==false&&/^[01]-\d+$/.test(x.product_id)&&x.price!=null&&(!day||x.product_id!==day.product_id)).map(x=>({name:x.product_name,description:x.description,image:imageFor(x.product_id,x.image_url),price:x.price,tag:"🍔 SMASH BURGERS"})));
+if(day)next.push({name:day.product_name,description:ingredientsFor(day.product_id,day.description),image:imageFor(day.product_id,day.image_url),price:day.day_price,regularPrice:day.price,isDay:true,tag:"🔥 BURGER DEL DÍA"});
+next.push(...controls.filter(x=>x.available!==false&&/^[01]-\d+$/.test(x.product_id)&&x.price!=null&&(!day||x.product_id!==day.product_id)).map(x=>({name:x.product_name,description:ingredientsFor(x.product_id,x.description),image:imageFor(x.product_id,x.image_url),price:x.price,tag:"🍔 SMASH BURGERS"})));
 next.push(...custom.filter(x=>x.available!==false&&x.category==="Hamburguesas").map(x=>({name:x.name,description:x.description,image:imageFor(null,x.image_url),price:x.price,tag:"🍔 NUESTRAS BURGERS"})));
 next.push(...promos.map(x=>({name:x.name,description:x.description,image:imageFor(null,x.image_url),price:x.price,tag:"🔥 PROMOCIONES"})));
 slides=next.filter(x=>x.name&&Number.isFinite(Number(x.price))&&Number(x.price)>=0);if(current>=slides.length)current=0;show()
