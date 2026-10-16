@@ -1,5 +1,9 @@
 name: Generar APK Mr Fritas
 on:
+  push:
+    paths:
+      - 'android-app/capacitor.config.json'
+      - '.github/workflows/android-apk.yml'
   workflow_dispatch:
 jobs:
   build:
