@@ -1,0 +1,27 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Burger del Día · Mr Fritas</title><style>*{box-sizing:border-box}body{margin:0;background:#151515;color:#fff;font-family:Arial,sans-serif;text-align:center}main{max-width:500px;margin:auto;padding:18px}h1{color:#ffcf00;font-size:25px}p{color:#ddd;line-height:1.4}canvas{display:block;width:100%;max-width:360px;margin:15px auto;border-radius:12px;box-shadow:0 8px 30px #0008}button{background:#ffcf00;color:#111;border:0;padding:15px 20px;border-radius:12px;font-weight:900;font-size:17px;cursor:pointer;width:100%;margin:5px 0}#msg{min-height:24px}a{color:#ffcf00}</style></head><body><main><h1>🍔 BURGER DEL DÍA</h1><p>Historia lista para Instagram, Facebook y WhatsApp. Se actualiza con la Burger del Día configurada en tu menú.</p><canvas id="poster" width="1080" height="1920"></canvas><button id="download">📸 DESCARGAR IMAGEN PNG</button><p id="msg">Cargando Burger del Día…</p><a href="admin.html">← Volver al administrador</a></main><script>
+const base="https://oiybkvtamrhjfcyfayes.supabase.co",key="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
+const images=["peanut.jpg","cheese_burger.jpg","bacon.jpg","champi.png","italiana.jpg","fresh.jpg","cuarto_de_kilo.png","oklahoma.png","cuarto_de_libra.png","whopper.png","clasica.jpg","Hamburguesa doble con queso y pepinillos.png","cheese_bacon.png"];
+const canvas=document.getElementById("poster"),ctx=canvas.getContext("2d"),msg=document.getElementById("msg");
+function loadImage(src){return new Promise((resolve,reject)=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>resolve(i);i.onerror=reject;i.src=src})}
+function centered(text,y,size,color="#fff",weight=900){ctx.fillStyle=color;ctx.font=weight+" "+size+"px Arial";ctx.textAlign="center";ctx.fillText(text,540,y)}
+function fit(text,maxWidth,maxSize){let size=maxSize;do{ctx.font="900 "+size+"px Arial";if(ctx.measureText(text).width<=maxWidth)break;size-=3}while(size>35);return size}
+function roundRect(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+async function draw(b){
+ const g=ctx.createLinearGradient(0,0,1080,1920);g.addColorStop(0,"#26231b");g.addColorStop(.6,"#111");g.addColorStop(1,"#060606");ctx.fillStyle=g;ctx.fillRect(0,0,1080,1920);
+ ctx.fillStyle="#ffcf00";ctx.fillRect(0,0,1080,22);ctx.fillRect(0,1898,1080,22);
+ try{const logo=await loadImage("logo.png.png");const s=Math.min(620/logo.width,280/logo.height);ctx.drawImage(logo,540-logo.width*s/2,72,logo.width*s,logo.height*s)}catch(e){centered("MR FRITAS",205,110,"#ffcf00")}
+ centered("BURGER CO.",365,43,"#fff",800);
+ roundRect(190,420,700,112,55,"#ffcf00");centered("🔥 BURGER DEL DÍA 🔥",497,65,"#151515");
+ const index=/^0-(\d+)$/.exec(b.product_id||"");const filename=index?images[+index[1]]:null;const candidates=[filename,b.image_url].filter(Boolean);
+ let img=null;for(const candidate of candidates){try{img=await loadImage(new URL(candidate,location.href).href);break}catch(e){}}
+ if(img){const s=Math.min(950/img.width,780/img.height);const w=img.width*s,h=img.height*s;ctx.save();ctx.shadowColor="#000";ctx.shadowBlur=50;ctx.drawImage(img,540-w/2,590+(760-h)/2,w,h);ctx.restore()}else{centered("🍔",1050,220)}
+ const name=String(b.product_name||"SMASH BURGER").toLocaleUpperCase("es-CL");centered(name,1485,fit(name,1000,93),"#fff");
+ centered("PRECIO ESPECIAL",1580,46,"#ffcf00");
+ roundRect(175,1625,730,165,35,"#ffcf00");
+ const price=Number(b.day_price??b.price);centered("$"+price.toLocaleString("es-CL"),1744,123,"#101010");
+ centered("CARNE FRESCA · JAMÁS CONGELADA",1854,34,"#fff",800);
+}
+async function refresh(){try{const r=await fetch(base+"/rest/v1/menu_control?select=product_id,product_name,image_url,price,day_price,burger_of_day,available&burger_of_day=eq.true&limit=1",{headers:{apikey:key},cache:"no-store"});if(!r.ok)throw Error("No se pudo consultar el menú");const a=await r.json();if(!a.length)throw Error("No hay Burger del Día seleccionada");await draw(a[0]);msg.textContent="✅ Imagen lista para descargar"}catch(e){msg.textContent="⚠️ "+e.message}}
+document.getElementById("download").addEventListener("click",()=>{if(!msg.textContent.startsWith("✅"))return;canvas.toBlob(blob=>{if(!blob){msg.textContent="No se pudo crear el PNG";return}const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="Mr-Fritas-Burger-del-Dia.png";a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)},"image/png")});
+refresh();
+</script></body></html>
