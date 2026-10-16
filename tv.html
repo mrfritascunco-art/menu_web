@@ -3,7 +3,7 @@
 <title>Mr Fritas · TV del local</title>
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0d0d0d;color:white;font-family:Arial,Helvetica,sans-serif}
-.screen{height:100vh;display:grid;grid-template-rows:12vh minmax(0,1fr) 18vh;background:radial-gradient(ellipse at 65% 38%,#30302a 0%,#101010 56%,#080808 100%)}
+.screen{height:100vh;display:grid;grid-template-rows:12vh minmax(0,1fr) 25vh;background:radial-gradient(ellipse at 65% 38%,#30302a 0%,#101010 56%,#080808 100%)}
 header{display:flex;align-items:center;justify-content:space-between;padding:0 4vw;border-bottom:2px solid #3a320d}
 .brand{font-weight:1000;font-size:clamp(26px,3.2vw,68px);letter-spacing:-1px;color:#ffcf00}.brand span{color:white}.topline{color:#e2e2e2;font-size:clamp(14px,1.45vw,28px);font-weight:bold}
 main{min-height:0;display:grid;grid-template-columns:51% 49%;align-items:center;padding:2vh 5vw;gap:2vw}
@@ -13,13 +13,13 @@ main{min-height:0;display:grid;grid-template-columns:51% 49%;align-items:center;
 .desc{font-size:clamp(15px,1.55vw,32px);line-height:1.35;color:#d6d6d6;max-width:46vw;max-height:18vh;overflow:hidden}
 .price{font-size:clamp(50px,6.2vw,128px);font-weight:1000;color:#ffcf00;margin-top:2vh;letter-spacing:-.055em}
 .photo{height:100%;max-height:58vh;display:flex;align-items:center;justify-content:center}.photo img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 18px 28px #0009)}.placeholder{font-size:14vw}
-footer{border-top:3px solid #ffcf00;background:#181818;display:flex;align-items:center;gap:3vw;padding:1.5vh 4vw}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;height:100%;gap:1vw}.stage{display:flex;flex-direction:column;align-items:center;gap:1vh;min-width:0;border-right:1px solid #555}.stage:last-child{border-right:0}.stage-title{font-weight:1000;font-size:clamp(14px,1.7vw,34px);text-align:center}.waiting-title{color:#f8d56b}.preparing-title{color:#ffab66}.ready-title{color:#7de79e}.stage-items{display:flex;flex-wrap:wrap;gap:.7vw;justify-content:center;align-content:flex-start;overflow:hidden;flex:1;width:100%}.stage-number{font-weight:1000;font-size:clamp(22px,2.6vw,50px);background:#343434;border-radius:10px;padding:.3vh .8vw}.stage-number.ready{background:#ffd000;color:#111}.stage-empty{color:#999;font-size:clamp(13px,1.2vw,24px);margin-top:1vh}footer{border-top:3px solid #ffcf00;background:#181818;display:flex;align-items:center;gap:3vw;padding:1.5vh 4vw}
 .ready-label{font-size:clamp(17px,1.9vw,37px);font-weight:1000;color:#ffcf00;min-width:24vw}.ready-numbers{display:flex;align-items:center;gap:1.5vw;overflow:hidden;flex:1}.number{background:#ffcf00;color:#111;border-radius:14px;min-width:7vw;padding:.6vh 1vw;text-align:center;font-size:clamp(28px,3.7vw,76px);font-weight:1000}.empty{color:#aaa;font-size:clamp(15px,1.5vw,29px)}.status{position:absolute;right:1vw;top:1vh;color:#999;font-size:12px}
 @media(max-aspect-ratio:1.4){main{grid-template-columns:53% 47%}h1{font-size:5vw}.desc{font-size:1.7vw}}
 </style></head><body><div class="screen">
 <header><div class="brand">MR FRITAS <span>BURGER CO.</span></div><div class="topline">🍔 SMASH BURGERS · CUNCO</div></header>
 <main><section class="copy"><div class="tag" id="tag">🍔 NUESTRAS BURGERS</div><div class="day-banner" id="dayBanner">🔥 ¡OFERTA BURGER DEL DÍA! 🔥</div><h1 id="name">Cargando menú…</h1><div class="ingredients-title">INGREDIENTES</div><div class="desc" id="desc">Carne fresca, jamás congelada.</div><div class="regular-price" id="regularPrice"></div><div class="day-price-label" id="dayPriceLabel">PRECIO ESPECIAL HOY</div><div class="price" id="price"></div></section><div class="photo" id="photo"><span class="placeholder">🍔</span></div></main>
-<footer><div class="ready-label">🔔 PEDIDOS LISTOS<br>PARA RETIRAR</div><div class="ready-numbers" id="ready"><span class="empty">Los números aparecerán aquí cuando Cocina los marque como listos.</span></div></footer>
+<footer><div class="board"><section class="stage"><div class="stage-title waiting-title">⏳ EN ESPERA</div><div class="stage-items" id="waiting"></div></section><section class="stage"><div class="stage-title preparing-title">👨‍🍳 EN PREPARACIÓN</div><div class="stage-items" id="preparing"></div></section><section class="stage"><div class="stage-title ready-title">🔔 LISTO</div><div class="stage-items" id="ready"></div></section></div></footer>
 </div>
 <script>
 const BASE="https://oiybkvtamrhjfcyfayes.supabase.co",KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
@@ -48,6 +48,7 @@ next.push(...custom.filter(x=>x.available!==false&&x.category==="Hamburguesas").
 next.push(...promos.map(x=>({name:x.name,description:x.description,image:imageFor(null,x.image_url),price:x.price,tag:"🔥 PROMOCIONES"})));
 slides=next.filter(x=>x.name&&Number.isFinite(Number(x.price))&&Number(x.price)>=0);if(current>=slides.length)current=0;show()
 }catch(e){console.warn("La TV conservará el último menú cargado",e)}}
-async function refreshReady(){try{const r=await fetch(BASE+"/rest/v1/rpc/tv_ready_orders",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:"{}",cache:"no-store"});if(!r.ok)throw Error("Sin acceso a pedidos");const rows=await r.json();const target=$("ready");target.replaceChildren();if(!rows.length){const el=document.createElement("span");el.className="empty";el.textContent="Esperando pedidos listos…";target.append(el)}else rows.slice(0,7).forEach(o=>{const el=document.createElement("span");el.className="number";el.textContent="#"+o.order_number;target.append(el)})}catch(e){console.warn("No se pudo actualizar pedidos listos",e)}}
+function renderStage(id,orders){const el=$(id);el.replaceChildren();if(!orders.length){const empty=document.createElement("span");empty.className="stage-empty";empty.textContent="Sin pedidos";el.append(empty);return}for(const o of orders.slice(0,9)){const badge=document.createElement("span");badge.className="stage-number"+(id==="ready"?" ready":"");badge.textContent="#"+o.order_number;el.append(badge)}}
+async function refreshReady(){try{const r=await fetch(BASE+"/rest/v1/rpc/tv_order_board",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:"{}",cache:"no-store"});if(!r.ok)throw Error("No se pudo consultar el panel");const rows=await r.json();renderStage("waiting",rows.filter(o=>o.stage==="espera"));renderStage("preparing",rows.filter(o=>o.stage==="preparacion"));renderStage("ready",rows.filter(o=>o.stage==="listo"))}catch(e){console.warn("Panel de pedidos:",e)}}
 refreshMenu();refreshReady();setInterval(()=>{current++;show()},9000);setInterval(refreshMenu,60000);setInterval(refreshReady,6000);
 </script></body></html>
