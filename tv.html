@@ -24,13 +24,14 @@ footer{border-top:3px solid #ffcf00;background:#181818;display:flex;align-items:
 const BASE="https://oiybkvtamrhjfcyfayes.supabase.co",KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
 const $=id=>document.getElementById(id);
 const FALLBACK_IMAGES=["peanut.jpg","cheese_burger.jpg","bacon.jpg","champi.png","italiana.jpg","fresh.jpg","cuarto_de_kilo.png","oklahoma.png","cuarto_de_libra.png","whopper.png","clasica.jpg","Hamburguesa doble con queso y pepinillos.png","cheese_bacon.jpg"];
-function imageFor(id,url){if(url)return url;const m=/^0-(\d+)$/.exec(id||"");return m?FALLBACK_IMAGES[Number(m[1])]||"":"";}
+const MENU_IMAGE_ROOT="https://mrfritascunco-art.github.io/menu_web/";
+function imageFor(id,url){const m=/^0-(\\d+)$/.exec(id||"");const filename=m?FALLBACK_IMAGES[Number(m[1])]||"":"";const chosen=url||filename;return chosen?new URL(chosen,MENU_IMAGE_ROOT).href:"";}
 let slides=[],current=0;
 const money=n=>"$"+Number(n).toLocaleString("es-CL");
 async function get(path){const r=await fetch(BASE+"/rest/v1/"+path,{headers:{apikey:KEY},cache:"no-store"});if(!r.ok)throw Error("Menú no disponible");return r.json()}
 function show(){if(!slides.length){$("name").textContent="PRONTO NUEVAS BURGERS";$("desc").textContent="Mr Fritas Burger Co.";return}
 const s=slides[current%slides.length];$("tag").textContent=s.tag;$("name").textContent=s.name;$("desc").textContent=s.description||"Preparada al momento con nuestra calidad Mr Fritas.";$("price").textContent=money(s.price);
-$("photo").replaceChildren();if(s.image){const img=document.createElement("img");img.src=s.image;img.alt=s.name;img.onerror=()=>{$("photo").textContent="🍔"};$("photo").append(img)}else $("photo").textContent="🍔"}
+$("photo").replaceChildren();if(s.image){const img=document.createElement("img");img.src=s.image;img.alt=s.name;img.onerror=()=>{console.warn("Foto no disponible:",img.src);$("photo").textContent="🍔";};$("photo").append(img)}else $("photo").textContent="🍔"}
 async function refreshMenu(){try{
 const [controls,custom,promos]=await Promise.all([
 get("menu_control?select=product_id,product_name,description,image_url,price,available,burger_of_day,day_price"),
@@ -40,8 +41,8 @@ const next=[];
 const day=controls.find(x=>x.burger_of_day===true&&x.available!==false&&x.day_price!=null&&/^0-\d+$/.test(x.product_id));
 if(day)next.push({name:day.product_name,description:day.description,image:imageFor(day.product_id,day.image_url),price:day.day_price,tag:"🔥 BURGER DEL DÍA"});
 next.push(...controls.filter(x=>x.available!==false&&/^[01]-\d+$/.test(x.product_id)&&x.price!=null).map(x=>({name:x.product_name,description:x.description,image:imageFor(x.product_id,x.image_url),price:x.price,tag:"🍔 SMASH BURGERS"})));
-next.push(...custom.filter(x=>x.available!==false&&x.category==="Hamburguesas").map(x=>({name:x.name,description:x.description,image:x.image_url||"",price:x.price,tag:"🍔 NUESTRAS BURGERS"})));
-next.push(...promos.map(x=>({name:x.name,description:x.description,image:x.image_url||"",price:x.price,tag:"🔥 PROMOCIONES"})));
+next.push(...custom.filter(x=>x.available!==false&&x.category==="Hamburguesas").map(x=>({name:x.name,description:x.description,image:imageFor(null,x.image_url),price:x.price,tag:"🍔 NUESTRAS BURGERS"})));
+next.push(...promos.map(x=>({name:x.name,description:x.description,image:imageFor(null,x.image_url),price:x.price,tag:"🔥 PROMOCIONES"})));
 slides=next.filter(x=>x.name&&Number.isFinite(Number(x.price))&&Number(x.price)>=0);if(current>=slides.length)current=0;show()
 }catch(e){console.warn("La TV conservará el último menú cargado",e)}}
 async function refreshReady(){try{const r=await fetch(BASE+"/rest/v1/rpc/tv_ready_orders",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:"{}",cache:"no-store"});if(!r.ok)throw Error("Sin acceso a pedidos");const rows=await r.json();const target=$("ready");target.replaceChildren();if(!rows.length){const el=document.createElement("span");el.className="empty";el.textContent="Esperando pedidos listos…";target.append(el)}else rows.slice(0,7).forEach(o=>{const el=document.createElement("span");el.className="number";el.textContent="#"+o.order_number;target.append(el)})}catch(e){console.warn("No se pudo actualizar pedidos listos",e)}}
