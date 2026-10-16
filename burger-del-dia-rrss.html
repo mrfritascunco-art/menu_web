@@ -26,7 +26,7 @@ async function draw(b){
  roundRect(175,333,730,100,50,"#ffcf00");centered("BURGER DEL DÍA",402,65,"#151515");
  const index=/^0-(\d+)$/.exec(b.product_id||"");const filename=index?images[+index[1]]:null;const candidates=[filename,b.image_url].filter(Boolean);
  let img=null;for(const candidate of candidates){try{img=await loadImage(new URL(candidate,location.href).href);break}catch(e){}}
- if(img){if(document.getElementById("removeBg").checked&&cutoutImage&&cutoutKey===b.product_id)img=cutoutImage;const s=Math.min(900/img.width,680/img.height);const w=img.width*s,h=img.height*s;ctx.save();ctx.shadowColor="#000";ctx.shadowBlur=45;ctx.drawImage(img,540-w/2,460+(690-h)/2,w,h);ctx.restore()}else centered("🍔",850,180);
+ if(img){if(document.getElementById("removeBg").checked&&cutoutImage&&cutoutKey===b.product_id)img=cutoutImage;const isCutout=img===cutoutImage;const s=Math.min((isCutout?1040:950)/img.width,(isCutout?850:740)/img.height);const w=img.width*s,h=img.height*s;ctx.save();ctx.shadowColor="#000";ctx.shadowBlur=45;ctx.drawImage(img,540-w/2,450+(710-h)/2,w,h);ctx.restore()}else centered("🍔",850,180);
  const name=String(b.product_name||"SMASH BURGER").toLocaleUpperCase("es-CL");centered(name,1210,fit(name,980,83),"#fff");
  const ingredients=(index?ingredientsById[+index[1]]:"")||b.description||"Preparada al momento con carne fresca";
  centered("— INGREDIENTES —",1258,28,"#ffcf00");
