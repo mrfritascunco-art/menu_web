@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Burger del Día · Mr Fritas</title><style>*{box-sizing:border-box}body{margin:0;background:#151515;color:#fff;font-family:Arial,sans-serif;text-align:center}main{max-width:500px;margin:auto;padding:18px}h1{color:#ffcf00;font-size:25px}p{color:#ddd;line-height:1.4}canvas{display:block;width:100%;max-width:360px;margin:15px auto;border-radius:12px;box-shadow:0 8px 30px #0008}button{background:#ffcf00;color:#111;border:0;padding:15px 20px;border-radius:12px;font-weight:900;font-size:17px;cursor:pointer;width:100%;margin:5px 0}#msg{min-height:24px}a{color:#ffcf00}</style></head><body><main><h1>🍔 BURGER DEL DÍA</h1><p>Historia lista para Instagram, Facebook y WhatsApp. Se actualiza con la Burger del Día configurada en tu menú.</p><canvas id="poster" width="1080" height="1920"></canvas><button id="download">📸 DESCARGAR IMAGEN PNG</button><p id="msg">Cargando Burger del Día…</p><a href="admin.html">← Volver al administrador</a></main><script>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Burger del Día · Mr Fritas</title><style>*{box-sizing:border-box}body{margin:0;background:#151515;color:#fff;font-family:Arial,sans-serif;text-align:center}main{max-width:500px;margin:auto;padding:18px}h1{color:#ffcf00;font-size:25px}p{color:#ddd;line-height:1.4}canvas{display:block;width:100%;max-width:360px;margin:15px auto;border-radius:12px;box-shadow:0 8px 30px #0008}button{background:#ffcf00;color:#111;border:0;padding:15px 20px;border-radius:12px;font-weight:900;font-size:17px;cursor:pointer;width:100%;margin:5px 0}#msg{min-height:24px}a{color:#ffcf00}</style></head><body><main><h1>🍔 BURGER DEL DÍA</h1><p>Historia lista para Instagram, Facebook y WhatsApp. Se actualiza con la Burger del Día configurada en tu menú.</p><label style="display:block;text-align:left;font-weight:800">📍 Dirección del local<input id="address" value="Cunco, Región de La Araucanía" style="display:block;width:100%;margin:8px 0 14px;padding:12px;border-radius:10px;border:1px solid #777;font-size:16px" maxlength="100"></label><canvas id="poster" width="1080" height="1920"></canvas><button id="download">📸 DESCARGAR IMAGEN PNG</button><p id="msg">Cargando Burger del Día…</p><a href="admin.html">← Volver al administrador</a></main><script>
 const base="https://oiybkvtamrhjfcyfayes.supabase.co",key="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
 const images=["peanut.jpg","cheese_burger.jpg","bacon.jpg","champi.png","italiana.jpg","fresh.jpg","cuarto_de_kilo.png","oklahoma.png","cuarto_de_libra.png","whopper.png","clasica.jpg","Hamburguesa doble con queso y pepinillos.png","cheese_bacon.png"];
 const canvas=document.getElementById("poster"),ctx=canvas.getContext("2d"),msg=document.getElementById("msg");
@@ -6,22 +6,43 @@ function loadImage(src){return new Promise((resolve,reject)=>{const i=new Image(
 function centered(text,y,size,color="#fff",weight=900){ctx.fillStyle=color;ctx.font=weight+" "+size+"px Arial";ctx.textAlign="center";ctx.fillText(text,540,y)}
 function fit(text,maxWidth,maxSize){let size=maxSize;do{ctx.font="900 "+size+"px Arial";if(ctx.measureText(text).width<=maxWidth)break;size-=3}while(size>35);return size}
 function roundRect(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+const ingredientsById=["Carne smash, queso cheddar, tocino, mantequilla de maní • Incluye papitas","Carne smash, pepinillos y mayo casera","Carne smash, cheddar, tocino crispy, cebolla caramelizada, salsa BBQ y mayo casera • Incluye papitas","Carne smash, champiñones, cebolla caramelizada, queso mantecoso y mayo casera • Incluye papitas","Carne smash, tomate, palta y mayo casera • Incluye papitas","Carne smash, lechuga, cebolla morada, cheddar y mayo casera • Incluye papitas","Triple carne smash, triple cheddar, doble tocino crispy, cebolla caramelizada, BBQ y mayo casera • Incluye papitas","Carne smash estilo Oklahoma, cebolla, pepinillo, queso mantecoso y mostaza • Incluye papitas","Carne smash, doble cheddar, cebolla, ketchup, mostaza y pepinillo","Carne smash, lechuga, cebolla, tomate y mayo casera","Carne smash, cheddar, cebolla morada, pepinillos y mayonesa • Incluye papitas","Doble carne smash, doble cheddar, cebolla morada, pepinillos y mayo casera","Carne smash, cheddar, tocino y mayonesa Kraft • Incluye papas fritas"];
+let currentBurger=null;
+function wrapped(text,x,y,maxWidth,lineHeight,fontSize,color,maxLines=3){
+ ctx.textAlign="center";ctx.fillStyle=color;ctx.font="700 "+fontSize+"px Arial";
+ const words=String(text||"").split(/\s+/),lines=[],lineLimit=maxWidth;
+ let line="";
+ for(const word of words){const next=line?line+" "+word:word;if(ctx.measureText(next).width>lineLimit&&line){lines.push(line);line=word}else line=next}
+ if(line)lines.push(line);
+ lines.slice(0,maxLines).forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));
+}
 async function draw(b){
- const g=ctx.createLinearGradient(0,0,1080,1920);g.addColorStop(0,"#26231b");g.addColorStop(.6,"#111");g.addColorStop(1,"#060606");ctx.fillStyle=g;ctx.fillRect(0,0,1080,1920);
- ctx.fillStyle="#ffcf00";ctx.fillRect(0,0,1080,22);ctx.fillRect(0,1898,1080,22);
- try{const logo=await loadImage("logo.png.png");const s=Math.min(620/logo.width,280/logo.height);ctx.drawImage(logo,540-logo.width*s/2,72,logo.width*s,logo.height*s)}catch(e){centered("MR FRITAS",205,110,"#ffcf00")}
- centered("BURGER CO.",365,43,"#fff",800);
- roundRect(190,420,700,112,55,"#ffcf00");centered("🔥 BURGER DEL DÍA 🔥",497,65,"#151515");
+ currentBurger=b;
+ const g=ctx.createLinearGradient(0,0,1080,1920);g.addColorStop(0,"#242017");g.addColorStop(.6,"#111");g.addColorStop(1,"#090909");ctx.fillStyle=g;ctx.fillRect(0,0,1080,1920);
+ ctx.fillStyle="#ffcf00";ctx.fillRect(0,0,1080,18);ctx.fillRect(0,1902,1080,18);
+ try{const logo=await loadImage("logo.png.png");const s=Math.min(520/logo.width,205/logo.height);ctx.drawImage(logo,540-logo.width*s/2,52,logo.width*s,logo.height*s)}catch(e){centered("MR FRITAS",155,92,"#ffcf00")}
+ centered("BURGER CO.",295,38,"#fff",800);
+ roundRect(175,333,730,100,50,"#ffcf00");centered("BURGER DEL DÍA",402,65,"#151515");
  const index=/^0-(\d+)$/.exec(b.product_id||"");const filename=index?images[+index[1]]:null;const candidates=[filename,b.image_url].filter(Boolean);
  let img=null;for(const candidate of candidates){try{img=await loadImage(new URL(candidate,location.href).href);break}catch(e){}}
- if(img){const s=Math.min(950/img.width,780/img.height);const w=img.width*s,h=img.height*s;ctx.save();ctx.shadowColor="#000";ctx.shadowBlur=50;ctx.drawImage(img,540-w/2,590+(760-h)/2,w,h);ctx.restore()}else{centered("🍔",1050,220)}
- const name=String(b.product_name||"SMASH BURGER").toLocaleUpperCase("es-CL");centered(name,1485,fit(name,1000,93),"#fff");
- centered("PRECIO ESPECIAL",1580,46,"#ffcf00");
- roundRect(175,1625,730,165,35,"#ffcf00");
- const price=Number(b.day_price??b.price);centered("$"+price.toLocaleString("es-CL"),1744,123,"#101010");
- centered("CARNE FRESCA · JAMÁS CONGELADA",1854,34,"#fff",800);
+ if(img){const s=Math.min(900/img.width,680/img.height);const w=img.width*s,h=img.height*s;ctx.save();ctx.shadowColor="#000";ctx.shadowBlur=45;ctx.drawImage(img,540-w/2,460+(690-h)/2,w,h);ctx.restore()}else centered("🍔",850,180);
+ const name=String(b.product_name||"SMASH BURGER").toLocaleUpperCase("es-CL");centered(name,1210,fit(name,980,83),"#fff");
+ const ingredients=(index?ingredientsById[+index[1]]:"")||b.description||"Preparada al momento con carne fresca";
+ wrapped(ingredients,540,1285,945,47,36,"#f0e9d8",3);
+ const normal=Number(b.price),special=Number(b.day_price??b.price);
+ ctx.fillStyle="#ddd";ctx.textAlign="center";ctx.font="700 41px Arial";ctx.fillText("PRECIO NORMAL",310,1458);
+ ctx.font="700 58px Arial";const normalText="$"+normal.toLocaleString("es-CL");ctx.fillText(normalText,310,1528);
+ const width=ctx.measureText(normalText).width;ctx.strokeStyle="#f36565";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(310-width/2-8,1506);ctx.lineTo(310+width/2+8,1506);ctx.stroke();
+ roundRect(540,1400,480,170,30,"#ffcf00");
+ ctx.fillStyle="#161616";ctx.font="900 32px Arial";ctx.fillText("HOY",780,1446);
+ ctx.font="900 105px Arial";ctx.fillText("$"+special.toLocaleString("es-CL"),780,1543);
+ ctx.fillStyle="#ffcf00";ctx.fillRect(70,1605,940,3);
+ centered("📲 +56 9 8833 1113",1687,60,"#fff");
+ wrapped("📍 "+(document.getElementById("address").value.trim()||"Cunco, Región de La Araucanía"),540,1762,950,47,38,"#ffcf00",2);
+ centered("CARNE FRESCA · JAMÁS CONGELADA",1860,32,"#fff",800);
 }
-async function refresh(){try{const r=await fetch(base+"/rest/v1/menu_control?select=product_id,product_name,image_url,price,day_price,burger_of_day,available&burger_of_day=eq.true&limit=1",{headers:{apikey:key},cache:"no-store"});if(!r.ok)throw Error("No se pudo consultar el menú");const a=await r.json();if(!a.length)throw Error("No hay Burger del Día seleccionada");await draw(a[0]);msg.textContent="✅ Imagen lista para descargar"}catch(e){msg.textContent="⚠️ "+e.message}}
+async function refresh(){try{const r=await fetch(base+"/rest/v1/menu_control?select=product_id,product_name,image_url,description,price,day_price,burger_of_day,available&burger_of_day=eq.true&limit=1",{headers:{apikey:key},cache:"no-store"});if(!r.ok)throw Error("No se pudo consultar el menú");const a=await r.json();if(!a.length)throw Error("No hay Burger del Día seleccionada");await draw(a[0]);msg.textContent="✅ Imagen lista para descargar"}catch(e){msg.textContent="⚠️ "+e.message}}
+document.getElementById("address").addEventListener("input",()=>{if(currentBurger)draw(currentBurger)});
 document.getElementById("download").addEventListener("click",()=>{if(!msg.textContent.startsWith("✅"))return;canvas.toBlob(blob=>{if(!blob){msg.textContent="No se pudo crear el PNG";return}const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="Mr-Fritas-Burger-del-Dia.png";a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)},"image/png")});
 refresh();
 </script></body></html>
