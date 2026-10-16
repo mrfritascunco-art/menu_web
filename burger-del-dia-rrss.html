@@ -46,18 +46,40 @@ async function draw(b){
 }
 async function prepareCutout(b){
  if(processing||!document.getElementById("removeBg").checked)return;
- const index=/^0-(\\d+)$/.exec(b.product_id||"");const filename=index?images[+index[1]]:null;
- const candidates=[filename,b.image_url].filter(Boolean);if(!candidates.length)return;
- processing=true;msg.textContent="✨ Quitando fondo con IA… La primera vez puede tardar un poco.";
+ const index=/^0-(\d+)$/.exec(b.product_id||"");
+ const filename=index?images[+index[1]]:null;
+ const candidates=[filename,b.image_url].filter(Boolean);
+ if(!candidates.length){msg.textContent="⚠️ Esta hamburguesa no tiene fotografía para recortar.";return}
+ processing=true;
+ const toggle=document.getElementById("removeBg"),button=document.getElementById("download");
+ button.disabled=true;button.textContent="⏳ PROCESANDO HAMBURGUESA…";
+ msg.textContent="✨ Preparando recorte de fondo…";
  try{
-  const {removeBackground}=await import("https://esm.sh/@imgly/background-removal@1.7.0");
-  let src=null;for(const candidate of candidates){try{const url=new URL(candidate,location.href).href;const response=await fetch(url);if(response.ok){src=await response.blob();break}}catch(e){}}
-  if(!src)throw Error("No se pudo abrir la fotografía");
-  const output=await removeBackground(src,{model:"isnet_fp16",output:{format:"image/png"}});
-  const objectUrl=URL.createObjectURL(output);const image=await loadImage(objectUrl);URL.revokeObjectURL(objectUrl);
-  cutoutImage=image;cutoutKey=b.product_id;await draw(b);msg.textContent="✅ Imagen sin fondo lista para descargar";
- }catch(e){console.warn("Recorte IA no disponible:",e);msg.textContent="⚠️ No se pudo quitar el fondo automáticamente. Puedes descargar la imagen con su foto original."}
- finally{processing=false}
+  let src=null;
+  for(const candidate of candidates){
+   try{const response=await fetch(new URL(candidate,location.href).href,{cache:"force-cache"});if(response.ok){src=await response.blob();break}}catch(e){}
+  }
+  if(!src)throw Error("No se pudo descargar la fotografía de la burger.");
+  msg.textContent="✨ Cargando IA para quitar el fondo (la primera vez puede tardar)…";
+  const {removeBackground}=await import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm");
+  const output=await removeBackground(src,{
+   model:"isnet_fp16",
+   publicPath:"https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/",
+   output:{format:"image/png"},
+   progress:(key,current,total)=>{
+    if(total>0)msg.textContent="✨ Preparando recorte: "+Math.round(current/total*100)+"%";
+   }
+  });
+  const objectUrl=URL.createObjectURL(output);
+  try{cutoutImage=await loadImage(objectUrl)}finally{URL.revokeObjectURL(objectUrl)}
+  cutoutKey=b.product_id;
+  if(toggle.checked){await draw(b);msg.textContent="✅ Fondo eliminado. Imagen lista para descargar."}
+ }catch(e){
+  console.error("Error al quitar fondo:",e);
+  msg.textContent="⚠️ No se pudo eliminar el fondo: "+(e?.message||String(e))+". La imagen original sigue disponible.";
+ }finally{
+  processing=false;button.disabled=false;button.textContent="📸 DESCARGAR IMAGEN PNG";
+ }
 }
 async function refresh(){try{const r=await fetch(base+"/rest/v1/menu_control?select=product_id,product_name,image_url,description,price,day_price,burger_of_day,available&burger_of_day=eq.true&limit=1",{headers:{apikey:key},cache:"no-store"});if(!r.ok)throw Error("No se pudo consultar el menú");const a=await r.json();if(!a.length)throw Error("No hay Burger del Día seleccionada");await draw(a[0]);msg.textContent="✅ Imagen lista para descargar";if(document.getElementById("removeBg").checked)prepareCutout(a[0])}catch(e){msg.textContent="⚠️ "+e.message}}
 document.getElementById("removeBg").addEventListener("change",async()=>{if(!currentBurger)return;await draw(currentBurger);if(document.getElementById("removeBg").checked&&cutoutKey!==currentBurger.product_id)prepareCutout(currentBurger);else msg.textContent="✅ Imagen lista para descargar"});
