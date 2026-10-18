@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Seguimiento | Mr. Fritas</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#f5f3ed;font-family:Arial,sans-serif;color:#171717}header{background:#111;color:#ffc400;text-align:center;padding:28px 12px;font-size:23px;font-weight:900}main{max-width:520px;margin:24px auto;padding:0 16px}.card{background:white;border-radius:20px;padding:24px;box-shadow:0 8px 24px #0001}h1{font-size:24px;margin:0 0 8px}.muted{color:#666;font-size:14px}#status{background:#ffc400;padding:15px;border-radius:12px;font-size:20px;font-weight:900;margin:18px 0}ol{list-style:none;padding:0;margin:24px 0}li{border-left:4px solid #ddd;padding:5px 0 24px 20px;color:#777;font-weight:700}li.done{border-color:#178653;color:#171717}li.current{border-color:#ffc400;color:#171717}li:last-child{padding-bottom:0}button{background:#111;color:#fff;border:0;border-radius:12px;padding:13px 18px;font-size:15px;font-weight:700;width:100%;cursor:pointer}a{color:#111}</style></head>
-<body><header>🍟 MR. FRITAS BURGER CO.</header><main><div class="card"><h1>📍 Sigue tu pedido</h1><p class="muted" id="updated">Consultando estado…</p><div id="status">Cargando…</div><ol id="steps"></ol><button id="refresh" type="button">↻ Actualizar estado</button><p class="muted">Se actualiza automáticamente cada 15 segundos. Guarda este enlace para volver a consultar tu pedido.</p><p><a href="index.html">← Volver al menú</a></p></div></main>
+<body><header>🍟 MR. FRITAS BURGER CO.</header><main><div class="card"><h1>📍 Sigue tu pedido</h1><p class="muted" id="updated">Consultando estado…</p><div id="status">Cargando…</div><ol id="steps"></ol><div id="pushBox" style="background:#fff5cc;border:1px solid #e9c34b;border-radius:13px;padding:14px;margin:16px 0"><b>🔔 ¿Te avisamos cuando esté listo?</b><p class="muted" style="margin:7px 0">Activa el aviso para recibirlo aunque cierres esta página.</p><button id="enablePush" type="button" style="background:#ffc400;color:#111">🔔 ACTIVAR NOTIFICACIONES</button><p id="pushMsg" class="muted" style="margin:8px 0 0"></p></div><button id="refresh" type="button">↻ Actualizar estado</button><p class="muted">Se actualiza automáticamente cada 15 segundos. Guarda este enlace para volver a consultar tu pedido.</p><p><a href="index.html">← Volver al menú</a></p></div></main>
 <script>
 const API="https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/rpc/track_order";
 const KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
@@ -26,5 +26,19 @@ async function refresh(){
  }catch(e){document.getElementById("updated").textContent="No pudimos actualizar. Intenta nuevamente.";document.getElementById("status").textContent="Sin conexión";}
  finally{loading=false}
 }
+const PUSH_URL="https://oiybkvtamrhjfcyfayes.supabase.co/functions/v1/pedido-push";
+const VAPID="BGQBS3Ly8YYLtdcykS_eXArrSRy4cwVyGvHVDLiGzMvpH2PrbgNAvUmC_Qdw2xlMAtxrbkw0JSrObzD3ZV4oGfM";
+function vapidBytes(v){const pad="=".repeat((4-v.length%4)%4),s=atob((v+pad).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(s,c=>c.charCodeAt(0))}
+async function enablePush(){const m=document.getElementById("pushMsg"),btn=document.getElementById("enablePush");btn.disabled=true;m.textContent="Configurando notificaciones…";try{
+ if(!valid)throw Error("Enlace de pedido inválido");
+ if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))throw Error("Tu navegador no admite notificaciones push");
+ if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!window.navigator.standalone)throw Error("En iPhone, primero toca Compartir → Agregar a pantalla de inicio y abre la página desde ese ícono.");
+ const permission=await Notification.requestPermission();if(permission!=="granted")throw Error("Debes permitir las notificaciones en el navegador");
+ const reg=await navigator.serviceWorker.register("pedido-sw.js",{scope:"/menu_web/"});await navigator.serviceWorker.ready;
+ let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidBytes(VAPID)});
+ const response=await fetch(PUSH_URL,{method:"POST",headers:{"Content-Type":"application/json",apikey:KEY},body:JSON.stringify({action:"subscribe",token,subscription:sub.toJSON()})});const data=await response.json();if(!response.ok)throw Error(data.error||"No se pudo guardar la suscripción");
+ m.textContent="✅ Listo. Te avisaremos cuando tu pedido esté listo.";btn.textContent="✅ NOTIFICACIONES ACTIVADAS";
+ }catch(e){m.textContent="⚠️ "+e.message;btn.disabled=false}}
+document.getElementById("enablePush").addEventListener("click",enablePush);
 document.getElementById("refresh").addEventListener("click",refresh);refresh();setInterval(refresh,15000);
 </script></body></html>
