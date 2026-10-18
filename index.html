@@ -260,6 +260,8 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkTrack
 function closeSent(){document.getElementById("sentModal").classList.remove("show")}
 function orderMore(){cart={};customData={};update();drawCart();closeCart();document.getElementById("moreOrderBtn").style.display="none";window.scrollTo({top:0,behavior:"smooth"})}
 function shareMenu(){let link="https://tinyurl.com/mrfritascunco",data={title:"Mr. Fritas • Cunco",text:"🍔 Mira el menú de Mr. Fritas y arma tu pedido aquí:",url:link};if(navigator.share){navigator.share(data).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(link).then(()=>alert("Link del menú copiado 📲")).catch(()=>prompt("Copia este link:",link))}else{prompt("Copia este link:",link)}}
+async function getPublicCode(token){if(!token)return null;try{const r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/rpc/order_public_code",{method:"POST",headers:{apikey:MENU_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_token:token})});if(!r.ok)return null;return await r.json()}catch(e){console.warn("Código de pedido no disponible",e);return null}}
+function updateSentCode(code){const el=document.getElementById("sentText");if(el&&code){el.innerHTML=el.innerHTML.replace(/Tu pedido <b>[^<]+<\/b>/,"Tu pedido <b>"+code+"</b>")}}
 function nextOrderNumber(){let key="mrFritasOrderSeq",n=parseInt(localStorage.getItem(key)||"0",10)+1;if(n>999)n=1;localStorage.setItem(key,String(n));return "MR-"+String(n).padStart(3,"0")}
 async function registerKitchenOrder(data){
   try{
@@ -344,10 +346,10 @@ localStorage.setItem("mrFritasLastCart",JSON.stringify({cart,customData}));repea
   const result=await response.json();
   if(!response.ok)throw Error(result?.message||"No se pudo validar el descuento");
   if(Number(result.total)!==t)throw Error("El pedido se registró, pero el total no coincide. Contacta al local y no lo envíes nuevamente.");
-  msg=msg.replace("🧾 *Pedido: "+orderNo+"*","🧾 *Pedido: #"+result.order_id+"*");
+  const publicCode=await getPublicCode(result.tracking_token);if(!publicCode)throw Error("No se pudo obtener el número de atención. El pedido ya está registrado; comunícate con el local.");msg=msg.replace("🧾 *Pedido: "+orderNo+"*","🧾 *Pedido: "+publicCode+"*");
   localStorage.setItem("mrFritasLastCart",JSON.stringify({cart,customData}));
   repeatVisibility();
-  showSent("#"+result.order_id);
+  showSent(publicCode);
   showTrackingLink(result.tracking_token);
   window.open("https://wa.me/56988331113?text="+encodeURIComponent(msg),"_blank");
   clubDiscountEligible=false;document.getElementById("clubDiscountCheck").checked=false;drawCart();
@@ -355,7 +357,7 @@ localStorage.setItem("mrFritasLastCart",JSON.stringify({cart,customData}));repea
  finally{button.disabled=false;button.textContent="Enviar pedido por WhatsApp"}
  return;
 }
-window.open("https://wa.me/56988331113?text="+encodeURIComponent(msg),"_blank");let kitchenItems=Object.entries(cart).map(([id,q])=>{let p=cartProduct(id);return {name:p[0],quantity:q,price:p[1],details:Array.isArray(p[2])?p[2]:[]}});showSent(orderNo);registerKitchenOrder({customer_name:n,order_type:tableNumber?"Consumo en local":tipo,table_number:tableNumber?Number(tableNumber):null,address:tipo==="Delivery"?a:null,location_url:tipo==="Delivery"?customerLocation:null,items:kitchenItems,notes:"CODIGO_CLIENTE:"+orderNo+" | "+(tipo==="Delivery"?(deliveryZone()==="fuera"?"📍 FUERA DE LÍMITES — COSTO DE REPARTO POR CONFIRMAR":"🛵 REPARTO URBANO $2.000")+(o?" | "+o:""):o)+(clubDigits?" | CLUB_FRITAS_PHONE:+56"+clubDigits:"")+(isTestDevice()?" | 🧪 PEDIDO DE PRUEBA - NO CONTABILIZAR":""),payment_method:pago+(cashInfo?" — "+cashInfo:""),total:t+tip,status:"nuevo"}).then(result=>{if(!showTrackingLink(result?.tracking_token)){document.getElementById("sentText").insertAdjacentHTML("beforeend","<br><br>⚠️ No se recibió el código de seguimiento. El pedido puede estar en cocina, pero no hay enlace disponible. Avísanos para revisarlo.");console.warn("Pedido sin tracking_token en respuesta:",result)}})}
+let kitchenItems=Object.entries(cart).map(([id,q])=>{let p=cartProduct(id);return {name:p[0],quantity:q,price:p[1],details:Array.isArray(p[2])?p[2]:[]}});showSent("Asignando número…");registerKitchenOrder({customer_name:n,order_type:tableNumber?"Consumo en local":tipo,table_number:tableNumber?Number(tableNumber):null,address:tipo==="Delivery"?a:null,location_url:tipo==="Delivery"?customerLocation:null,items:kitchenItems,notes:"CODIGO_CLIENTE:"+orderNo+" | "+(tipo==="Delivery"?(deliveryZone()==="fuera"?"📍 FUERA DE LÍMITES — COSTO DE REPARTO POR CONFIRMAR":"🛵 REPARTO URBANO $2.000")+(o?" | "+o:""):o)+(clubDigits?" | CLUB_FRITAS_PHONE:+56"+clubDigits:"")+(isTestDevice()?" | 🧪 PEDIDO DE PRUEBA - NO CONTABILIZAR":""),payment_method:pago+(cashInfo?" — "+cashInfo:""),total:t+tip,status:"nuevo"}).then(async result=>{if(!result?.tracking_token){document.getElementById("sentText").insertAdjacentHTML("beforeend","<br><br>⚠️ No se confirmó el pedido en Cocina. Consulta con el local antes de repetirlo.");return}const code=await getPublicCode(result.tracking_token);if(!code){document.getElementById("sentText").insertAdjacentHTML("beforeend","<br><br>⚠️ No se pudo obtener el número. Consulta con el local antes de repetir el pedido.");return}updateSentCode(code);msg=msg.replace("🧾 *Pedido: "+orderNo+"*","🧾 *Pedido: "+code+"*");showTrackingLink(result.tracking_token);window.open("https://wa.me/56988331113?text="+encodeURIComponent(msg),"_blank")})}
 let flashPromo=null,flashTimer=null,flashAutoClose=null;
 function closeFlashPopup(){document.getElementById("flashPopup").classList.remove("show");if(flashAutoClose){clearTimeout(flashAutoClose);flashAutoClose=null}}
 function refreshFlashClock(){if(!flashPromo)return;let remaining=new Date(flashPromo.ends_at).getTime()-Date.now();if(remaining<=0){flashPromo=null;closeFlashPopup();if(flashTimer){clearInterval(flashTimer);flashTimer=null}return}let seconds=Math.ceil(remaining/1000);document.getElementById("flashPopupClock").textContent=String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")}
