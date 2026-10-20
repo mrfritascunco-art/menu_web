@@ -58,7 +58,7 @@ window.MFSession={
 
 /* Barra común de navegación entre módulos, respetando permisos del personal. */
 (function(){
- const pages=[["🍳 Cocina","cocina.html","cocina"],["💵 Caja","caja.html","caja"],["⚙️ Administración","admin-promociones.html","admin"],["👥 Trabajadores","admin-trabajadores.html","admin"]];
+ const pages=[["🍳 Cocina","cocina.html","cocina"],["💵 Caja","caja.html","caja"],["⚙️ Administración","admin-promociones.html","admin"],["👥 Trabajadores","admin-trabajadores.html","admin"],["📊 Ventas","ventas.html","admin"]];
  const current=location.pathname.split("/").pop();
  if(!pages.some(p=>p[1]===current))return;
  const style=document.createElement("style");
