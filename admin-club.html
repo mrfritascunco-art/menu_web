@@ -26,8 +26,9 @@ $("members").onclick=async e=>{
  const link=new URL("club-fritas.html#card="+t,location.href).href;
  const msg="Hola 🍔 Aquí tienes tu enlace privado para consultar tus sellos de Club Fritas. No lo compartas: "+link;
  const wa="https://wa.me/"+b.dataset.cardPhone.replace(/[^0-9]/g,"")+"?text="+encodeURIComponent(msg);
- $("memberMsg").textContent="Enlace generado. Envíalo solo al socio verificado.";
- const a=document.createElement("a");a.href=wa;a.target="_blank";a.rel="noopener";a.textContent="📲 Enviar enlace al socio";$("memberMsg").append(document.createElement("br"),a);
+ $("memberMsg").textContent="✅ Enlace generado. Usa el botón amarillo debajo del socio para enviarlo.";
+ const oldLink=b.parentElement.querySelector(".club-send-link");if(oldLink)oldLink.remove();
+ const a=document.createElement("a");a.href=wa;a.target="_blank";a.rel="noopener noreferrer";a.className="club-send-link";a.textContent="📲 Enviar tarjeta por WhatsApp";a.style.cssText="display:block;margin-top:12px;padding:14px;border-radius:10px;background:#25d366;color:#111;font-weight:bold;text-align:center;text-decoration:none";b.insertAdjacentElement("afterend",a);
  }catch(err){$("memberMsg").textContent="Error: "+err.message}finally{b.disabled=false}
 };
 
