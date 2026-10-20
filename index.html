@@ -229,6 +229,7 @@ async function refreshClubDiscount(){
 }
 function clubDiscountActive(){return clubDiscountEligible&&document.getElementById("clubDiscountCheck")?.checked===true}
 function openCart(){refreshKitchenWait();restoreClubPhone();deliveryMode();document.getElementById("modal").classList.add("show");refreshClubDiscount()}setInterval(()=>{if(!document.hidden&&document.getElementById("modal")?.classList.contains("show"))refreshKitchenWait()},30000);
+setInterval(()=>{if(!document.hidden&&document.getElementById("modal")?.classList.contains("show")&&kitchenLoad)renderKitchenWait()},10000);
 function closeCart(){document.getElementById("modal").classList.remove("show")}
 function cancelOrder(){if(!Object.keys(cart).length){closeCart();return}if(!confirm("¿Cancelar el pedido y vaciar el carrito?"))return;cart={};customData={};customOfferPrice=null;pendingUpsells=[];update();drawCart();closeCart()}
 function paymentMode(){let pago=document.querySelector('input[name="pago"]:checked')?.value||"Efectivo";document.getElementById("bankBox").style.display=pago==="Transferencia"?"block":"none";document.getElementById("cashBox").style.display=pago==="Efectivo"?"block":"none"}
