@@ -4,13 +4,13 @@
 <body><main><header><a href="index.html"><img src="logo.png.png" alt="Logo Mr. Fritas"></a><h1>CLUB FRITAS</h1><p>¡Tus compras tienen premio! Un sello por pedido entregado desde $15.000 en productos.</p></header>
 <section class="panel hidden" id="myCard"><h2>🍟 Mis sellos</h2><p id="cardWelcome"></p><p id="cardCount" style="font-size:24px;font-weight:900;color:#ffcb05"></p><div class="stamps" id="earnedStamps"></div><p id="rewardState" style="color:#ffcb05;font-weight:bold"></p><p class="muted">Un sello por pedido entregado desde $15.000 en productos. Los premios se habilitarán próximamente.</p></section>
 <section class="panel hidden" id="qrPanel"><h2>📷 Escanear QR del tótem</h2><p>Vincula tu tarjeta digital a tu compra. El QR dura 5 minutos.</p><button type="button" id="scanTotemQr">📷 Escanear QR del tótem</button><video id="qrCamera" class="hidden" playsinline muted style="width:100%;margin-top:12px;border-radius:12px"></video><label for="qrManual">O ingresa el código del QR</label><input id="qrManual" type="text" placeholder="Código del tótem" autocomplete="off" spellcheck="false"><button type="button" id="linkQrManual" style="margin-top:10px">Vincular compra</button><p id="qrStatus" role="status"></p><p class="muted">Solo escanea códigos mostrados por el tótem de Mr Fritas. No compartas el enlace privado de tu tarjeta.</p></section>
-<section class="panel" id="cardAccess"><h2>¿Ya eres socio?</h2><p>Solicita a Mr. Fritas tu enlace privado para consultar los sellos. Guárdalo: quien tenga ese enlace puede ver tu tarjeta.</p><a href="https://wa.me/56988331113?text=Hola%20Mr.%20Fritas%2C%20soy%20socio%20del%20Club%20y%20quiero%20mi%20enlace%20privado%20para%20ver%20mis%20sellos." target="_blank" rel="noopener">📲 Pedir mi enlace por WhatsApp</a></section><section class="panel" id="loginPanel"><h2>Inscríbete gratis 🍔</h2><p>Completa tus datos y envíanos la solicitud desde tu propio WhatsApp. Nuestro equipo revisará tu inscripción y confirmará cuando esté activa.</p>
+<section class="panel" id="cardAccess"><h2>¿Ya eres socio?</h2><p>Solicita a Mr. Fritas tu enlace privado para consultar los sellos. Guárdalo: quien tenga ese enlace puede ver tu tarjeta.</p><a href="https://wa.me/56988331113?text=Hola%20Mr.%20Fritas%2C%20soy%20socio%20del%20Club%20y%20quiero%20mi%20enlace%20privado%20para%20ver%20mis%20sellos." target="_blank" rel="noopener">📲 Pedir mi enlace por WhatsApp</a></section><section class="panel" id="loginPanel"><h2>Inscríbete gratis 🍔</h2><p>Solo necesitamos tu nombre y WhatsApp. Luego confirma tu número enviándonos un mensaje. ¡Así de fácil!</p>
 <form id="clubRequest"><label for="name">Tu nombre</label><input id="name" type="text" maxlength="100" autocomplete="name" required placeholder="Nombre">
 <label for="phone">Tu WhatsApp (+56)</label><input id="phone" type="tel" inputmode="numeric" autocomplete="tel-national" required placeholder="9 1234 5678">
 <div class="check"><input id="terms" type="checkbox" required><label for="terms">Solicito inscribirme en Club Fritas y autorizo usar mi número para gestionar mi tarjeta, sellos y recompensas.</label></div>
 <div class="check"><input id="marketing" type="checkbox"><label for="marketing">Opcional: quiero recibir promociones y novedades de Mr. Fritas por WhatsApp. Podré retirar mi autorización cuando quiera.</label></div>
-<button id="sendBtn" type="submit">📲 Verificar mi WhatsApp gratis</button></form>
-<p id="loginMsg" role="status"></p><p class="muted">Se abrirá WhatsApp con un mensaje preparado. Debes enviarlo tú. La tarjeta no se activa automáticamente: nuestro equipo confirmará tu inscripción.</p></section>
+<button id="sendBtn" type="submit">🍔 Inscribirme gratis</button></form>
+<p id="loginMsg" role="status"></p><p class="muted">Después de inscribirte, pulsa «Confirmar por WhatsApp» y envía el mensaje. Revisaremos tu solicitud antes de activar la tarjeta.</p></section>
 <section class="panel"><h2>Así ganas premios</h2><div class="stamps"><div class="stamp"><img src="logo.png.png" alt="Sello 1"></div><div class="stamp"><img src="logo.png.png" alt="Sello 2"></div><div class="stamp"><img src="logo.png.png" alt="Sello 3"></div><div class="stamp"><img src="logo.png.png" alt="Sello 4"></div><div class="stamp"><img src="logo.png.png" alt="Sello 5"></div><div class="stamp"><img src="logo.png.png" alt="Sello 6"></div><div class="stamp"><img src="logo.png.png" alt="Sello 7"></div><div class="stamp"><img src="logo.png.png" alt="Sello 8"></div><div class="stamp"><img src="logo.png.png" alt="Sello 9"></div><div class="stamp"><img src="logo.png.png" alt="Sello 10"></div></div><p>🍔 <b>Un sello</b> por pedido entregado desde $15.000 en productos, sin contar reparto.</p><p>🎁 <b>5 sellos:</b> 10% de descuento en la próxima compra.</p><p>🍟 <b>10 sellos:</b> papas con un topping o una hamburguesa participante.</p><p class="muted">La acreditación digital de sellos está en preparación.</p></section>
 <footer><a href="index.html">← Volver al menú</a></footer></main>
 <script>
@@ -75,7 +75,7 @@ window.addEventListener("pagehide",()=>{void stopQrCamera();});
 
 document.getElementById("clubRequest").addEventListener("submit",async function(e){
 e.preventDefault();
-const phone=document.getElementById("phone").value.replace(/\D/g,"");
+let phone=document.getElementById("phone").value.replace(/\D/g,"");if(phone.startsWith("56")&&phone.length===11)phone=phone.slice(2);
 const name=document.getElementById("name").value.trim();
 const msg=document.getElementById("loginMsg");
 if(!/^9\d{8}$/.test(phone)){msg.textContent="Ingresa un celular chileno válido: 9XXXXXXXX";msg.className="error";return}
@@ -94,9 +94,9 @@ try{
  const status=await response.json();
  msg.textContent=status==="already_member"?"Ya existe una tarjeta asociada a este número. Escríbenos para revisarla.":"Solicitud registrada. Ahora envía el mensaje por WhatsApp desde el número indicado para que podamos verificarlo.";
  msg.className="success";
- const link=document.createElement("a");link.href=whatsapp;link.target="_blank";link.rel="noopener noreferrer";link.textContent="📲 Abrir WhatsApp para confirmar";link.style.cssText="display:block;text-align:center;margin-top:12px;padding:14px;border-radius:10px;background:#ffcb05;color:#111;font-weight:900;text-decoration:none";
- msg.after(link);
- window.location.href=whatsapp;
+ const link=document.createElement("a");link.href=whatsapp;link.target="_blank";link.rel="noopener noreferrer";link.textContent="📲 Confirmar inscripción por WhatsApp";link.style.cssText="display:block;text-align:center;margin-top:12px;padding:14px;border-radius:10px;background:#ffcb05;color:#111;font-weight:900;text-decoration:none";
+ const prior=document.getElementById("clubConfirmWhatsapp");if(prior)prior.remove();link.id="clubConfirmWhatsapp";msg.after(link);
+ btn.textContent="Solicitud registrada";
 }catch(err){msg.textContent=err.message+" No se ha guardado la solicitud. Intenta más tarde.";msg.className="error";btn.disabled=false}
 
 });
