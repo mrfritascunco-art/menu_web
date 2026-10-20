@@ -58,7 +58,7 @@ window.MFSession={
 
 /* Barra común de navegación entre módulos, respetando permisos del personal. */
 (function(){
- const pages=[["🍳 Cocina","cocina.html","cocina"],["💵 Caja","caja.html","caja"],["⚙️ Administración","admin-promociones.html","admin"],["👥 Trabajadores","admin-trabajadores.html","admin"],["📊 Ventas","ventas.html","admin"]];
+ const pages=[["🍳 Cocina","cocina.html","cocina"],["💵 Caja","caja.html","caja"],["⚙️ Administración","admin-promociones.html","admin"],["👥 Trabajadores","admin-trabajadores.html","admin"],["📊 Ventas","ventas.html","admin"],["🧪 Pruebas","menu-pruebas.html","owner"]];
  const current=location.pathname.split("/").pop();
  if(!pages.some(p=>p[1]===current))return;
  const style=document.createElement("style");
@@ -71,7 +71,9 @@ window.MFSession={
    const token=await MFSession.get("cocina")||await MFSession.get("caja")||await MFSession.get("admin");
    if(!token){nav.hidden=true;return}
    const [admin,cocina,caja]=await Promise.all(["admin","cocina","caja"].map(role=>MFSession.allowed(token,role)));
-   nav.innerHTML=pages.filter(p=>admin||(p[2]==="cocina"&&cocina)||(p[2]==="caja"&&caja)).map(p=>'<a href="'+p[1]+'"'+(p[1]===current?' class="active" aria-current="page"':'')+'>'+p[0]+'</a>').join("");
+   let owner=false;
+   if(admin){try{const r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/rpc/mf_test_owner",{method:"POST",headers:{apikey:"sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT",Authorization:"Bearer "+token,"Content-Type":"application/json"},body:"{}"});owner=r.ok&&(await r.json())===true}catch(e){}}
+   nav.innerHTML='<a href="gestion.html" style="background:#ffc400;color:#111;border-color:#ffc400">⌂ Panel de trabajo</a>'+pages.filter(p=>(p[2]==="owner"?owner:admin||(p[2]==="cocina"&&cocina)||(p[2]==="caja"&&caja))).map(p=>'<a href="'+p[1]+'"'+(p[1]===current?' class="active" aria-current="page"':'')+'>'+p[0]+'</a>').join("");
    nav.hidden=!nav.children.length;
   }catch(e){nav.hidden=true}
  }
