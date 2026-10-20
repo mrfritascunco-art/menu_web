@@ -62,7 +62,7 @@ window.MFSession={
  const current=location.pathname.split("/").pop();
  if(!pages.some(p=>p[1]===current))return;
  const style=document.createElement("style");
- style.textContent="#mfGestionNav{position:sticky;top:0;z-index:9999;background:#171717;padding:9px 8px;display:flex;gap:7px;overflow-x:auto;box-shadow:0 3px 12px #0003;scrollbar-width:thin}#mfGestionNav a{flex:1 0 auto;text-align:center;color:#fff;text-decoration:none;font:800 12px Arial,sans-serif;border:1px solid #555;border-radius:10px;padding:11px 8px;white-space:nowrap}#mfGestionNav a.active{background:#ffc400;color:#111;border-color:#ffc400}";
+ style.textContent="#mfGestionNav[hidden]{display:none}#mfGestionNav{position:sticky;top:0;z-index:9999;background:#171717;padding:9px 8px;display:flex;gap:7px;overflow-x:auto;box-shadow:0 3px 12px #0003;scrollbar-width:thin}#mfGestionNav a{flex:1 0 auto;text-align:center;color:#fff;text-decoration:none;font:800 12px Arial,sans-serif;border:1px solid #555;border-radius:10px;padding:11px 8px;white-space:nowrap}#mfGestionNav a.active{background:#ffc400;color:#111;border-color:#ffc400}";
  document.head.appendChild(style);
  const nav=document.createElement("nav");nav.id="mfGestionNav";nav.setAttribute("aria-label","Navegación de Mr Fritas Gestión");nav.hidden=true;
  document.body.insertBefore(nav,document.body.firstChild);
