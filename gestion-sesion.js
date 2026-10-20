@@ -68,12 +68,12 @@ window.MFSession={
  document.body.insertBefore(nav,document.body.firstChild);
  async function update(){
   try{
-   const token=await MFSession.get("cocina")||await MFSession.get("caja")||await MFSession.get("admin");
+   const token=await MFSession.get("cocina")||await MFSession.get("caja")||await MFSession.get("ventas")||await MFSession.get("pruebas")||await MFSession.get("admin");
    if(!token){nav.hidden=true;return}
-   const [admin,cocina,caja]=await Promise.all(["admin","cocina","caja"].map(role=>MFSession.allowed(token,role)));
+   const [admin,cocina,caja,ventas,pruebas]=await Promise.all(["admin","cocina","caja","ventas","pruebas"].map(role=>MFSession.allowed(token,role)));
    let owner=false;
    if(admin){try{const r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/rpc/mf_test_owner",{method:"POST",headers:{apikey:"sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT",Authorization:"Bearer "+token,"Content-Type":"application/json"},body:"{}"});owner=r.ok&&(await r.json())===true}catch(e){}}
-   nav.innerHTML='<a href="gestion.html" style="background:#ffc400;color:#111;border-color:#ffc400">⌂ Panel de trabajo</a>'+pages.filter(p=>(p[2]==="owner"?owner:admin||(p[2]==="cocina"&&cocina)||(p[2]==="caja"&&caja))).map(p=>'<a href="'+p[1]+'"'+(p[1]===current?' class="active" aria-current="page"':'')+'>'+p[0]+'</a>').join("");
+   nav.innerHTML='<a href="gestion.html" style="background:#ffc400;color:#111;border-color:#ffc400">⌂ Panel de trabajo</a>'+pages.filter(p=>(p[2]==="owner"?owner:admin||(p[2]==="ventas"&&ventas)||(p[2]==="cocina"&&cocina)||(p[2]==="caja"&&caja))).map(p=>'<a href="'+p[1]+'"'+(p[1]===current?' class="active" aria-current="page"':'')+'>'+p[0]+'</a>').join("");
    nav.hidden=!nav.children.length;
   }catch(e){nav.hidden=true}
  }
