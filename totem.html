@@ -59,12 +59,13 @@ function optionsFor(p){
 }
 function openCustom(p){selected=p;$("customTitle").textContent=p.name;$("customDesc").textContent=p.description||"";$("customOptions").innerHTML=optionsFor(p);$("customOverlay").classList.remove("hidden");calcCustom()}
 function calcCustom(){if(selected)$("customPrice").textContent="Total: "+money(selected.price+[...document.querySelectorAll("#customOptions .extraOpt:checked")].reduce((s,x)=>s+Number(x.dataset.price),0))}
-function showQuickAdded(){let el=$("quickAddedToast");if(!el){el=document.createElement("div");el.id="quickAddedToast";el.style.cssText="position:fixed;bottom:110px;left:50%;transform:translateX(-50%);padding:14px 22px;background:#111;color:#ffc400;font-weight:900;border-radius:14px;z-index:10000;pointer-events:none";document.body.appendChild(el)}el.textContent="✓ Agregada al carrito";clearTimeout(window.quickToastTimer);window.quickToastTimer=setTimeout(()=>el.remove(),1600)}
+function showQuickAdded(){let el=$("quickAddedToast");if(!el){el=document.createElement("div");el.id="quickAddedToast";el.style.cssText="position:fixed;bottom:110px;left:50%;transform:translateX(-50%);padding:14px 22px;background:#111;color:#ffc400;font-weight:900;border-radius:14px;z-index:10000;display:flex;align-items:center;gap:16px";document.body.appendChild(el)}el.innerHTML="";const label=document.createElement("span");label.textContent="✓ Agregada al carrito";const undo=document.createElement("button");undo.type="button";undo.textContent="DESHACER";undo.style.cssText="background:transparent;color:#ffc400;border:1px solid #ffc400;border-radius:8px;padding:9px;font-weight:bold";const key=window.lastQuickLineId;undo.onclick=()=>{if(cart[key]){cart[key].qty--;if(cart[key].qty<=0)delete cart[key];update()}clearTimeout(window.quickToastTimer);el.remove()};el.append(label,undo);clearTimeout(window.quickToastTimer);window.quickToastTimer=setTimeout(()=>el.remove(),4500)}
+
 function addLine(p,extras=[],removed=[],sauces=[],flavor=""){
  const price=p.price+extras.reduce((s,x)=>s+x.price,0);
  const id=p.id+"|"+JSON.stringify({extras,removed,sauces,flavor});
  if(!cart[id])cart[id]={id,name:p.name,price,qty:0,extras,removed,sauces,flavor};
- cart[id].qty++;update();
+ cart[id].qty++;window.lastQuickLineId=id;update();
 }
 $("cancelCustom").onclick=()=>{$("customOverlay").classList.add("hidden");selected=null};
 $("confirmCustom").onclick=()=>{
