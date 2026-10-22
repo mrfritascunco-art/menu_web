@@ -98,7 +98,12 @@ const sections=[
 ["Bebida en lata",2500,"Coca-Cola, Sprite, Fanta, Kem, Canada Dry o Limón Soda • Variedades sujetas a disponibilidad del día","Refrescante surtido de sodas con hielo.png"]]},
 {name:"Promos",items:[["Combo para 2",17900,"2 smash clásicas + papas + salsas + 2 bebidas • Exclusivo consumo local","Combo de Hamburguesas y Papas.png"]]}
 ];
-let cart={},customerLocation="",customBase="",customData={},pendingUpsells=[],menuControl={},customOfferPrice=null; const fmt=n=>"$"+n.toLocaleString("es-CL");
+let cart={},customerLocation="",customBase="",customData={},pendingUpsells=[],menuControl={},customOfferPrice=null;
+const CART_SAVE_KEY="mrFritasActiveCart:"+location.pathname+":"+new URLSearchParams(location.search).get("mesa");
+function saveActiveCart(){try{if(Object.keys(cart).length)sessionStorage.setItem(CART_SAVE_KEY,JSON.stringify({cart,customData,at:Date.now()}));else sessionStorage.removeItem(CART_SAVE_KEY)}catch(e){}}
+function restoreActiveCart(){try{const saved=JSON.parse(sessionStorage.getItem(CART_SAVE_KEY)||"null");if(!saved||Date.now()-saved.at>12*60*60*1000){sessionStorage.removeItem(CART_SAVE_KEY);return}const valid={};for(const [key,qty] of Object.entries(saved.cart||{})){const base=key.split("|")[0];if(!Number.isInteger(qty)||qty<1||qty>40)continue;if(base.startsWith("custom-")&&!customMenuProducts[base])continue;if(!base.startsWith("custom-")&&!/^\\d+-\\d+$/.test(base))continue;try{if(!baseProduct(base))continue}catch(e){continue}valid[key]=qty}cart=valid;customData=Object.fromEntries(Object.entries(saved.customData||{}).filter(([k])=>valid[k]));update();drawCart()}catch(e){console.warn("No se pudo recuperar el carrito",e)}}
+window.addEventListener("pagehide",saveActiveCart);
+ const fmt=n=>"$"+n.toLocaleString("es-CL");
 const MENU_API="https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_control?select=product_id,product_name,description,image_url,available,featured,price,burger_of_day,day_price";
 const MENU_KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
 const tableParam=new URLSearchParams(location.search).get("mesa");
@@ -210,7 +215,7 @@ async function loadMenuControl(){
 }
 function product(id){return baseProduct(id.split("|")[0])}function add(id){if(menuControl[id]?.available===false)return alert("Este producto está agotado por ahora 🚫");let p=baseProduct(id),si=Number(id.split("-")[0]);if(si===0||p[0]==="Base Smash"||p[0]==="Bebida en lata"||(si===2&&/Arma tus Papas/.test(p[0]))||si===3||si===5)return openCustom(id);cart[id]=(cart[id]||0)+1;update()}
 function change(id,n){cart[id]=(cart[id]||0)+n;if(cart[id]<=0){delete cart[id];delete customData[id]}drawCart();update()}
-function update(){renderKitchenWait();let c=0,t=0;Object.entries(cart).forEach(([id,q])=>{let p=cartProduct(id);c+=q;t+=p[1]*q});document.getElementById("count").textContent=c+" producto"+(c===1?"":"s");document.getElementById("mini").textContent=fmt(t)}
+function update(){renderKitchenWait();let c=0,t=0;Object.entries(cart).forEach(([id,q])=>{let p=cartProduct(id);c+=q;t+=p[1]*q});document.getElementById("count").textContent=c+" producto"+(c===1?"":"s");document.getElementById("mini").textContent=fmt(t);saveActiveCart()}
 let clubDiscountEligible=false,clubDiscountChecking=false;
 async function refreshClubDiscount(){
  const token=localStorage.getItem("mrFritasClubCardToken")||"";
@@ -377,7 +382,7 @@ let flashPromo=null,flashTimer=null,flashAutoClose=null;
 function closeFlashPopup(){document.getElementById("flashPopup").classList.remove("show");if(flashAutoClose){clearTimeout(flashAutoClose);flashAutoClose=null}}
 function refreshFlashClock(){if(!flashPromo)return;let remaining=new Date(flashPromo.ends_at).getTime()-Date.now();if(remaining<=0){flashPromo=null;closeFlashPopup();if(flashTimer){clearInterval(flashTimer);flashTimer=null}return}let seconds=Math.ceil(remaining/1000);document.getElementById("flashPopupClock").textContent=String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")}
 async function loadFlashPopup(){try{let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_flash_promos?select=gift_text,active,starts_at,ends_at&id=eq.1",{headers:{apikey:MENU_KEY},cache:"no-store"});if(!r.ok)return;let a=(await r.json())[0];if(!a||!a.active||!a.gift_text||!a.ends_at||new Date(a.ends_at).getTime()<=Date.now()||new Date(a.starts_at).getTime()>Date.now())return;flashPromo=a;document.getElementById("flashPopupGift").textContent="🎁 "+a.gift_text;refreshFlashClock();document.getElementById("flashPopup").classList.add("show");flashTimer=setInterval(refreshFlashClock,1000);flashAutoClose=setTimeout(closeFlashPopup,10000)}catch(e){console.warn("Promo relámpago no disponible",e)}}
-render();loadMenuPromotions();loadMenuControl().then(loadCustomProducts);loadSpecialAnnouncement();loadFlashPopup();fetchStoreMode().catch(()=>{document.getElementById("openStatus").textContent="⚠️ No se pudo verificar el estado del local"});update();repeatVisibility();tableMode();setInterval(checkHours,1000);setInterval(()=>fetchStoreMode().catch(()=>{}),20000);setTimeout(showRepeatPop,700);
+render();loadMenuPromotions();loadMenuControl().then(loadCustomProducts).finally(restoreActiveCart);loadSpecialAnnouncement();loadFlashPopup();fetchStoreMode().catch(()=>{document.getElementById("openStatus").textContent="⚠️ No se pudo verificar el estado del local"});update();repeatVisibility();tableMode();setInterval(checkHours,1000);setInterval(()=>fetchStoreMode().catch(()=>{}),20000);setTimeout(showRepeatPop,700);
 </script><script>
 (function(){
   const key="mrFritasTestDevice";
