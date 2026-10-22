@@ -43,7 +43,7 @@ main{min-height:0;display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr)
 </style></head><body><div class="screen idle">
 <header><div class="brand-wrap"><img class="tv-logo" src="logo.png.png" alt="Logo Mr Fritas"><div class="brand">MR FRITAS <span>BURGER CO.</span></div></div><div class="contact"><small>📲 PEDIDOS Y CONSULTAS</small>+56 9 8833 1113</div></header>
 <main><div class="promo-area"><section class="copy"><div class="tag" id="tag">🍔 NUESTRAS BURGERS</div><div class="day-banner" id="dayBanner">🔥 ¡OFERTA BURGER DEL DÍA! 🔥</div><h1 id="name">Cargando menú…</h1><div class="ingredients-title">INGREDIENTES</div><div class="desc" id="desc">Carne fresca, jamás congelada.</div><div class="regular-price" id="regularPrice"></div><div class="day-price-label" id="dayPriceLabel">PRECIO ESPECIAL HOY</div><div class="price" id="price"></div></section><div class="photo" id="photo"><span class="placeholder">🍔</span></div></div><aside class="orders-panel"><div class="orders-heading">🍟 PEDIDOS EN VIVO</div><div class="orders-board"><section class="stage"><div class="stage-title waiting-title">⏳ EN ESPERA</div><div class="stage-items" id="waiting"></div></section><section class="stage"><div class="stage-title preparing-title">👨‍🍳 EN PREPARACIÓN</div><div class="stage-items" id="preparing"></div></section><section class="stage"><div class="stage-title ready-title">🔔 LISTO</div><div class="stage-items" id="ready"></div></section></div></aside></main>
-</div><button id="soundToggle" class="sound-toggle" type="button">🔇 ACTIVAR SONIDO</button>
+</div>
 <script>
 const BASE="https://oiybkvtamrhjfcyfayes.supabase.co",KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
 const $=id=>document.getElementById(id);
@@ -72,20 +72,17 @@ next.push(...promos.map(x=>({name:x.name,description:x.description,image:imageFo
 slides=next.filter(x=>x.name&&Number.isFinite(Number(x.price))&&Number(x.price)>=0);if(current>=slides.length)current=0;show()
 }catch(e){console.warn("La TV conservará el último menú cargado",e)}}
 function renderStage(id,orders){const el=$(id);el.replaceChildren();if(!orders.length){const empty=document.createElement("span");empty.className="stage-empty";empty.textContent="Sin pedidos";el.append(empty);return}for(const o of orders.slice(0,9)){const badge=document.createElement("span");badge.className="stage-number"+(id==="ready"?" ready":"");const code=o.order_code||("#"+o.order_number);badge.textContent=/^M-/.test(code)?"🍽️ "+code+(o.customer_name?" · "+o.customer_name:""):code;el.append(badge)}}
-let audioCtx=null,soundEnabled=false,readyInitialized=false,previousReady=new Set();
-const soundButton=$("soundToggle");
-soundButton.addEventListener("click",async()=>{
+let audioCtx=null,soundEnabled=true,readyInitialized=false,previousReady=new Set();
+async function prepareAudio(){
  try{
   const Context=window.AudioContext||window.webkitAudioContext;
-  if(!Context)throw Error("Audio no compatible");
-  if(!audioCtx)audioCtx=new Context();
-  await audioCtx.resume();
-  soundEnabled=!soundEnabled;
-  soundButton.textContent=soundEnabled?"🔊 SONIDO ACTIVADO":"🔇 ACTIVAR SONIDO";
-  soundButton.classList.toggle("enabled",soundEnabled);
-  if(soundEnabled){playPop();if("speechSynthesis" in window){speechSynthesis.cancel();speakTv("Sonido activado. ¡Bienvenidos a Mr Fritas!")}}
- }catch(e){console.warn("No se pudo activar el audio",e);soundButton.textContent="🔇 AUDIO NO DISPONIBLE"}
-});
+  if(Context){if(!audioCtx)audioCtx=new Context();if(audioCtx.state==="suspended")await audioCtx.resume()}
+  if("speechSynthesis" in window)speechSynthesis.getVoices();
+ }catch(e){console.warn("Audio pendiente de permiso del navegador",e)}
+}
+prepareAudio();
+document.addEventListener("pointerdown",prepareAudio,{passive:true});
+document.addEventListener("keydown",prepareAudio);
 function playPop(){
  if(!soundEnabled||!audioCtx||audioCtx.state!=="running")return;
  const t=audioCtx.currentTime,osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
