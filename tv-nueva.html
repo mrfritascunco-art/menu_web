@@ -58,13 +58,13 @@ main{height:100%;padding:0!important;gap:0!important}
 .screen:not(.idle) .copy h1{font-size:clamp(36px,3.8vw,80px)}
 .sound-toggle{bottom:1vh;right:1vw;opacity:.9}
 
-/* Animación ambiental suave, sin interferir con los pedidos */
-.screen{position:relative;isolation:isolate;background:#0d0d0d}
-.screen::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 35% 55% at 10% 20%,rgba(255,208,0,.14),transparent 75%),radial-gradient(ellipse 40% 50% at 85% 80%,rgba(255,180,0,.10),transparent 75%);animation:tvAmbient 22s ease-in-out infinite alternate}
-.promo-area{position:relative;isolation:isolate;background:linear-gradient(115deg,rgba(23,23,23,.84),rgba(16,16,16,.80))!important}
-.promo-area::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 55% 60% at 20% 40%,rgba(255,205,0,.11),transparent 80%),radial-gradient(ellipse 55% 65% at 90% 70%,rgba(255,205,0,.08),transparent 80%);animation:tvAmbient 20s ease-in-out infinite alternate}
-@keyframes tvAmbient{0%{opacity:.4;transform:translate3d(-2%,1%,0) scale(1)}50%{opacity:.85}100%{opacity:.55;transform:translate3d(3%,-2%,0) scale(1.08)}}
-@media(prefers-reduced-motion:reduce){.screen::before,.promo-area::before{animation:none}}
+/* Luz ambiental cálida: sin líneas ni barridos, detrás de la hamburguesa */
+.promo-area{position:relative;isolation:isolate;overflow:hidden;background:#121212!important}
+.promo-area::before{content:"";position:absolute;inset:4% 0 4% 37%;z-index:0;pointer-events:none;background:radial-gradient(ellipse 48% 53% at 57% 52%,rgba(255,194,0,.23) 0%,rgba(255,176,0,.09) 43%,transparent 76%);filter:blur(24px);opacity:.52;transform:scale(.91);animation:burgerGlow 8s ease-in-out infinite alternate}
+.promo-area>.copy,.promo-area>.photo{position:relative;z-index:1}
+.photo img{filter:drop-shadow(0 20px 20px rgba(0,0,0,.35))!important}
+@keyframes burgerGlow{0%{opacity:.28;transform:scale(.88)}100%{opacity:.78;transform:scale(1.07)}}
+@media(prefers-reduced-motion:reduce){.promo-area::before{animation:none;opacity:.4}}
 
 /* Encuadre consistente para todas las burgers; sin deformar ni cortar fotos */
 .photo{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
