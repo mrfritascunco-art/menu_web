@@ -100,10 +100,11 @@ const sections=[
 ];
 let cart={},customerLocation="",customBase="",customData={},pendingUpsells=[],menuControl={},customOfferPrice=null;
 const CART_SAVE_KEY="mrFritasActiveCart:"+location.pathname+":"+new URLSearchParams(location.search).get("mesa");
-const CART_INITIAL_SNAPSHOT=(()=>{try{return sessionStorage.getItem(CART_SAVE_KEY)}catch(e){return null}})();
-function saveActiveCart(){try{if(Object.keys(cart).length)sessionStorage.setItem(CART_SAVE_KEY,JSON.stringify({cart,customData,at:Date.now()}));else sessionStorage.removeItem(CART_SAVE_KEY)}catch(e){}}
-function restoreActiveCart(){try{const saved=JSON.parse(CART_INITIAL_SNAPSHOT||"null");if(!saved||Date.now()-saved.at>12*60*60*1000){sessionStorage.removeItem(CART_SAVE_KEY);return}const valid={};for(const [key,qty] of Object.entries(saved.cart||{})){const base=key.split("|")[0];if(!Number.isInteger(qty)||qty<1||qty>40)continue;if(base.startsWith("custom-")&&!customMenuProducts[base])continue;if(!base.startsWith("custom-")&&!/^\\d+-\\d+$/.test(base))continue;try{if(!baseProduct(base))continue}catch(e){continue}valid[key]=qty}cart=valid;customData=Object.fromEntries(Object.entries(saved.customData||{}).filter(([k])=>valid[k]));update();drawCart()}catch(e){console.warn("No se pudo recuperar el carrito",e)}}
-window.addEventListener("pagehide",saveActiveCart);
+const CART_INITIAL_SNAPSHOT=(()=>{try{return localStorage.getItem(CART_SAVE_KEY)}catch(e){return null}})();
+let cartRestoring=true;
+function saveActiveCart(){if(cartRestoring)return;try{if(Object.keys(cart).length)localStorage.setItem(CART_SAVE_KEY,JSON.stringify({cart,customData,at:Date.now()}));else localStorage.removeItem(CART_SAVE_KEY}catch(e){}}
+function restoreActiveCart(){try{const saved=JSON.parse(CART_INITIAL_SNAPSHOT||"null");if(!saved||Date.now()-saved.at>12*60*60*1000){localStorage.removeItem(CART_SAVE_KEY;return}const valid={};for(const [key,qty] of Object.entries(saved.cart||{})){const base=key.split("|")[0];if(!Number.isInteger(qty)||qty<1||qty>40)continue;if(base.startsWith("custom-")&&!customMenuProducts[base])continue;if(!base.startsWith("custom-")&&!/^\d+-\d+$/.test(base))continue;try{if(!baseProduct(base))continue}catch(e){continue}valid[key]=qty}cart=valid;customData=Object.fromEntries(Object.entries(saved.customData||{}).filter(([k])=>valid[k]));cartRestoring=false;update();drawCart()}catch(e){cartRestoring=false;console.warn("No se pudo recuperar el carrito",e)}}
+window.addEventListener("pagehide",()=>{if(!cartRestoring)saveActiveCart()});
  const fmt=n=>"$"+n.toLocaleString("es-CL");
 const MENU_API="https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_control?select=product_id,product_name,description,image_url,available,featured,price,burger_of_day,day_price";
 const MENU_KEY="sb_publishable_mGfgsfOujYYOBE0y6YZJ0g_jvAjdWVT";
