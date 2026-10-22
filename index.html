@@ -112,7 +112,7 @@ function mfRestoreCart(){
  if(mfCartReady)return;
  try{
   const saved=JSON.parse(localStorage.getItem(MF_CART_STORAGE_KEY)||"null");
-  if(saved&&saved.cart&&saved.savedAt&&Date.now()-saved.savedAt<12*60*60*1000){
+  if(saved&&saved.cart&&saved.savedAt&&Date.now()-saved.savedAt<15*60*1000){
    const valid={};
    const extras={};
    for(const [key,quantity] of Object.entries(saved.cart)){
