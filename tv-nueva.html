@@ -69,6 +69,11 @@ main{height:100%;padding:0!important;gap:0!important}
 /* Encuadre consistente para todas las burgers; sin deformar ni cortar fotos */
 .photo{display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
 .photo img{width:100%;height:100%;object-fit:contain!important;object-position:center center;max-width:100%;max-height:100%;margin:auto;transform-origin:center center}
+
+/* TV v6: reflejos amarillos visibles, lentos y sin tapar información */
+.promo-area::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(108deg,transparent 8%,rgba(255,207,0,.02) 27%,rgba(255,207,0,.21) 45%,rgba(255,207,0,.06) 55%,transparent 72%);background-size:210% 100%;animation:tvShimmer 13s linear infinite}
+@keyframes tvShimmer{0%{background-position:150% 0}100%{background-position:-150% 0}}
+@media(prefers-reduced-motion:reduce){.promo-area::after{animation:none}}
 </style></head><body><div class="screen idle">
 <header><div class="brand-wrap"><img class="tv-logo" src="logo.png.png" alt="Logo Mr Fritas"><div class="brand">MR FRITAS <span>BURGER CO.</span></div></div><div class="contact"><small>📲 PEDIDOS Y CONSULTAS</small>+56 9 8833 1113</div></header>
 <main><div class="promo-area"><section class="copy"><div class="tag" id="tag">🍔 NUESTRAS BURGERS</div><div class="day-banner" id="dayBanner">🔥 ¡OFERTA BURGER DEL DÍA! 🔥</div><h1 id="name">Cargando menú…</h1><div class="ingredients-title">INGREDIENTES</div><div class="desc" id="desc">Carne fresca, jamás congelada.</div><div class="regular-price" id="regularPrice"></div><div class="day-price-label" id="dayPriceLabel">PRECIO ESPECIAL HOY</div><div class="price" id="price"></div></section><div class="photo" id="photo"><span class="placeholder">🍔</span></div></div><aside class="orders-panel"><div class="orders-heading">🍟 PEDIDOS EN VIVO</div><div class="orders-board"><section class="stage"><div class="stage-title waiting-title">⏳ EN ESPERA</div><div class="stage-items" id="waiting"></div></section><section class="stage"><div class="stage-title preparing-title">👨‍🍳 EN PREPARACIÓN</div><div class="stage-items" id="preparing"></div></section><section class="stage"><div class="stage-title ready-title">🔔 LISTO</div><div class="stage-items" id="ready"></div></section></div></aside></main>
