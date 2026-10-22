@@ -112,21 +112,28 @@ function saveActiveCart(){
 function restoreActiveCart(){
  try{
   const saved=JSON.parse(CART_INITIAL_SNAPSHOT||"null");
-  if(saved&&saved.cart&&Date.now()-saved.at<12*60*60*1000){
-   const valid={};
-   for(const [key,qty] of Object.entries(saved.cart)){
+  if(saved&&saved.cart&&Date.now()-Number(saved.at)<12*60*60*1000){
+   cart={...saved.cart};
+   customData={...(saved.customData||{})};
+   for(const key of Object.keys(cart)){
     const base=key.split("|")[0];
-    if(!Number.isInteger(qty)||qty<1||qty>40)continue;
-    if(base.startsWith("custom-")&&!customMenuProducts[base])continue;
-    if(!base.startsWith("custom-")&&!/^\d+-\d+$/.test(base))continue;
-    try{if(!baseProduct(base))continue}catch(e){continue}
-    valid[key]=qty;
+    if(!Number.isInteger(cart[key])||cart[key]<1||cart[key]>40||(!base.startsWith("custom-")&&!/^\d+-\d+$/.test(base))){
+     delete cart[key];delete customData[key];
+    }
    }
-   cart=valid;
-   customData=Object.fromEntries(Object.entries(saved.customData||{}).filter(([k])=>valid[k]));
   }
- }catch(e){console.warn("No se pudo recuperar el carrito",e)}
- finally{cartRestoring=false;update();drawCart()}
+ }catch(e){console.warn("Error recuperando carrito",e)}
+ finally{
+  cartRestoring=false;
+  try{update();drawCart()}catch(e){console.warn("No se pudo mostrar carrito recuperado",e)}
+ }
+}
+function restoreDeferredCartItems(){
+ let changed=false;
+ for(const key of Object.keys(cart)){
+  try{if(!baseProduct(key.split("|")[0])){delete cart[key];delete customData[key];changed=true}}catch(e){delete cart[key];delete customData[key];changed=true}
+ }
+ if(changed){update();drawCart()}
 }
 window.addEventListener("pagehide",saveActiveCart);
  const fmt=n=>"$"+n.toLocaleString("es-CL");
@@ -408,7 +415,7 @@ let flashPromo=null,flashTimer=null,flashAutoClose=null;
 function closeFlashPopup(){document.getElementById("flashPopup").classList.remove("show");if(flashAutoClose){clearTimeout(flashAutoClose);flashAutoClose=null}}
 function refreshFlashClock(){if(!flashPromo)return;let remaining=new Date(flashPromo.ends_at).getTime()-Date.now();if(remaining<=0){flashPromo=null;closeFlashPopup();if(flashTimer){clearInterval(flashTimer);flashTimer=null}return}let seconds=Math.ceil(remaining/1000);document.getElementById("flashPopupClock").textContent=String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")}
 async function loadFlashPopup(){try{let r=await fetch("https://oiybkvtamrhjfcyfayes.supabase.co/rest/v1/menu_flash_promos?select=gift_text,active,starts_at,ends_at&id=eq.1",{headers:{apikey:MENU_KEY},cache:"no-store"});if(!r.ok)return;let a=(await r.json())[0];if(!a||!a.active||!a.gift_text||!a.ends_at||new Date(a.ends_at).getTime()<=Date.now()||new Date(a.starts_at).getTime()>Date.now())return;flashPromo=a;document.getElementById("flashPopupGift").textContent="🎁 "+a.gift_text;refreshFlashClock();document.getElementById("flashPopup").classList.add("show");flashTimer=setInterval(refreshFlashClock,1000);flashAutoClose=setTimeout(closeFlashPopup,10000)}catch(e){console.warn("Promo relámpago no disponible",e)}}
-render();loadMenuPromotions();loadMenuControl().then(loadCustomProducts).finally(restoreActiveCart);loadSpecialAnnouncement();loadFlashPopup();fetchStoreMode().catch(()=>{document.getElementById("openStatus").textContent="⚠️ No se pudo verificar el estado del local"});update();repeatVisibility();tableMode();setInterval(checkHours,1000);setInterval(()=>fetchStoreMode().catch(()=>{}),20000);setTimeout(showRepeatPop,700);
+render();restoreActiveCart();loadMenuPromotions();loadMenuControl().then(async()=>{await loadCustomProducts();restoreDeferredCartItems()}).catch(e=>console.warn("Error cargando catálogo adicional",e));loadSpecialAnnouncement();loadFlashPopup();fetchStoreMode().catch(()=>{document.getElementById("openStatus").textContent="⚠️ No se pudo verificar el estado del local"});update();repeatVisibility();tableMode();setInterval(checkHours,1000);setInterval(()=>fetchStoreMode().catch(()=>{}),20000);setTimeout(showRepeatPop,700);
 </script><script>
 (function(){
   const key="mrFritasTestDevice";
