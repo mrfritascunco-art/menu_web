@@ -57,6 +57,14 @@ main{height:100%;padding:0!important;gap:0!important}
 .screen.idle .copy h1{font-size:clamp(58px,6.5vw,140px)}
 .screen:not(.idle) .copy h1{font-size:clamp(36px,3.8vw,80px)}
 .sound-toggle{bottom:1vh;right:1vw;opacity:.9}
+
+/* Animación ambiental suave, sin interferir con los pedidos */
+.screen{position:relative;isolation:isolate;background:#0d0d0d}
+.screen::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 35% 55% at 10% 20%,rgba(255,208,0,.14),transparent 75%),radial-gradient(ellipse 40% 50% at 85% 80%,rgba(255,180,0,.10),transparent 75%);animation:tvAmbient 22s ease-in-out infinite alternate}
+.promo-area{position:relative;isolation:isolate;background:linear-gradient(115deg,rgba(23,23,23,.84),rgba(16,16,16,.80))!important}
+.promo-area::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 55% 60% at 20% 40%,rgba(255,205,0,.11),transparent 80%),radial-gradient(ellipse 55% 65% at 90% 70%,rgba(255,205,0,.08),transparent 80%);animation:tvAmbient 20s ease-in-out infinite alternate}
+@keyframes tvAmbient{0%{opacity:.4;transform:translate3d(-2%,1%,0) scale(1)}50%{opacity:.85}100%{opacity:.55;transform:translate3d(3%,-2%,0) scale(1.08)}}
+@media(prefers-reduced-motion:reduce){.screen::before,.promo-area::before{animation:none}}
 </style></head><body><div class="screen idle">
 <header><div class="brand-wrap"><img class="tv-logo" src="logo.png.png" alt="Logo Mr Fritas"><div class="brand">MR FRITAS <span>BURGER CO.</span></div></div><div class="contact"><small>📲 PEDIDOS Y CONSULTAS</small>+56 9 8833 1113</div></header>
 <main><div class="promo-area"><section class="copy"><div class="tag" id="tag">🍔 NUESTRAS BURGERS</div><div class="day-banner" id="dayBanner">🔥 ¡OFERTA BURGER DEL DÍA! 🔥</div><h1 id="name">Cargando menú…</h1><div class="ingredients-title">INGREDIENTES</div><div class="desc" id="desc">Carne fresca, jamás congelada.</div><div class="regular-price" id="regularPrice"></div><div class="day-price-label" id="dayPriceLabel">PRECIO ESPECIAL HOY</div><div class="price" id="price"></div></section><div class="photo" id="photo"><span class="placeholder">🍔</span></div></div><aside class="orders-panel"><div class="orders-heading">🍟 PEDIDOS EN VIVO</div><div class="orders-board"><section class="stage"><div class="stage-title waiting-title">⏳ EN ESPERA</div><div class="stage-items" id="waiting"></div></section><section class="stage"><div class="stage-title preparing-title">👨‍🍳 EN PREPARACIÓN</div><div class="stage-items" id="preparing"></div></section><section class="stage"><div class="stage-title ready-title">🔔 LISTO</div><div class="stage-items" id="ready"></div></section></div></aside></main>
