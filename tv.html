@@ -7,7 +7,7 @@
 header{display:flex;align-items:center;justify-content:space-between;padding:0 3vw;gap:2vw;border-bottom:2px solid #3a320d}
 .brand{font-weight:1000;font-size:clamp(26px,3.2vw,68px);letter-spacing:-1px;color:#ffcf00}.brand span{color:white}.brand-wrap{display:flex;align-items:center;gap:1.3vw;min-width:0}.tv-logo{height:9vh;max-width:12vw;object-fit:contain;flex-shrink:0}.contact{color:#ffcf00;font-size:clamp(17px,1.85vw,36px);font-weight:1000;white-space:nowrap}.contact small{display:block;color:#fff;font-size:.52em;font-weight:700;text-align:right;margin-bottom:.2vh}.topline{color:#e2e2e2;font-size:clamp(14px,1.45vw,28px);font-weight:bold}
 main{min-height:0;display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);align-items:stretch;padding:1.6vh 2vw;gap:1.5vw}
-.promo-area{min-width:0;min-height:0;display:grid;grid-template-columns:53% 47%;align-items:center;gap:1vw;background:linear-gradient(125deg,#1d1a0a,#101010 58%);border:2px solid #f5bf20;border-radius:18px;padding:2vh 1.5vw}
+.promo-area{min-width:0;min-height:0;overflow:hidden;display:grid;grid-template-columns:53% 47%;align-items:center;gap:1vw;background:linear-gradient(125deg,#1d1a0a,#101010 58%);border:2px solid #f5bf20;border-radius:18px;padding:2vh 1.5vw}
 .orders-panel{min-width:0;min-height:0;display:flex;flex-direction:column;gap:1vh;background:#171717;border:2px solid #f5bf20;border-radius:18px;padding:1.3vh .8vw}
 .orders-heading{font-weight:1000;text-align:center;font-size:clamp(17px,1.8vw,36px);color:#ffd000;letter-spacing:.05em}
 .orders-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4vw;flex:1;min-height:0}
@@ -27,11 +27,11 @@ main{min-height:0;display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr)
 .screen.idle .photo{max-height:75vh}
 .screen.idle .photo img{max-width:96%;max-height:96%}
 .screen:not(.idle) footer{display:none}
-.screen:not(.idle) .copy h1{font-size:clamp(30px,3.6vw,74px)}
-.screen:not(.idle) .copy .desc{font-size:clamp(13px,1.3vw,27px)}
-.screen:not(.idle) .copy .price{font-size:clamp(32px,4vw,80px)}
+.screen:not(.idle) .copy h1{font-size:clamp(24px,3vw,58px);line-height:1.02;margin:.6vh 0}
+.screen:not(.idle) .copy .desc{font-size:clamp(12px,1.1vw,23px);max-height:11vh;line-height:1.25}
+.screen:not(.idle) .copy .price{font-size:clamp(24px,3vw,56px);line-height:1.05;flex-shrink:0}
 .screen:not(.idle) .photo img{max-width:95%;max-height:95%}
-.copy{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:center}.tag{display:inline-block;color:#171717;background:#ffd000;padding:.55em 1em;border-radius:100px;font-size:clamp(13px,1.25vw,24px);font-weight:900;letter-spacing:1px}
+.copy{min-width:0;min-height:0;max-height:100%;overflow:hidden;display:flex;flex-direction:column;justify-content:center}.tag{display:inline-block;color:#171717;background:#ffd000;padding:.55em 1em;border-radius:100px;font-size:clamp(13px,1.25vw,24px);font-weight:900;letter-spacing:1px}
 .day-banner{display:none;margin-top:.5vh;background:#e62626;color:white;border-radius:12px;padding:.7vh 1.2vw;font-size:clamp(17px,2vw,38px);font-weight:1000;letter-spacing:.04em;box-shadow:0 0 30px #e6262655;transform:rotate(-1deg);width:max-content;max-width:100%}.day-banner.active{display:block}.regular-price{display:none;font-size:clamp(18px,2vw,40px);color:#bdbdbd;margin-top:.4vh;font-weight:700}.regular-price.active{display:block}.regular-price s{color:#f18d8d;text-decoration-thickness:3px}.day-price-label{font-size:clamp(14px,1.5vw,28px);color:#ffd000;font-weight:900;margin-top:.4vh;display:none}.day-price-label.active{display:block}
 .ingredients-title{font-size:clamp(13px,1.3vw,24px);font-weight:900;color:#ffcf00;letter-spacing:.12em;margin-bottom:.7vh}h1{font-size:clamp(35px,5.0vw,100px);line-height:.98;letter-spacing:-.05em;margin:1.3vh 0 1.0vh;overflow-wrap:anywhere}
 .desc{font-size:clamp(15px,1.55vw,32px);line-height:1.35;color:#d6d6d6;max-width:46vw;max-height:14vh;overflow:hidden}
@@ -54,6 +54,15 @@ main{min-height:0;display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr)
 .screen.idle{grid-template-rows:11vh minmax(0,1fr)}
 .screen:not(.idle){padding-bottom:15vh}
 .screen:not(.idle) main{padding-bottom:1.6vh}
+.screen:not(.idle) .promo-area{padding:1vh 1.5vw;align-items:stretch}
+.screen:not(.idle) .copy{justify-content:center;gap:0}
+.screen:not(.idle) .tag{font-size:clamp(11px,1vw,20px);padding:.35em .8em}
+.screen:not(.idle) .day-banner{font-size:clamp(13px,1.5vw,27px);padding:.35vh .8vw;margin-top:.3vh}
+.screen:not(.idle) .regular-price{font-size:clamp(13px,1.3vw,25px);margin-top:.2vh}
+.screen:not(.idle) .day-price-label{font-size:clamp(11px,1vw,20px);margin-top:.2vh}
+.screen:not(.idle) .ingredients-title{font-size:clamp(11px,1vw,20px);margin-bottom:.2vh}
+.screen:not(.idle) .price{margin-top:.2vh}
+
 .screen:not(.idle)~.ticker{height:15vh;min-height:84px}
 .screen:not(.idle)~.ticker .ticker-track{font-size:clamp(21px,2vw,39px)}
 .screen:not(.idle)~.ticker .ticker-label{font-size:clamp(17px,1.5vw,30px)}
