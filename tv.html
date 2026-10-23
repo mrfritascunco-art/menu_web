@@ -65,11 +65,12 @@ const [controls,custom,promos]=await Promise.all([
 get("menu_control?select=product_id,product_name,description,image_url,price,available,burger_of_day,day_price"),
 get("menu_custom?select=id,category,name,description,image_url,price,available"),
 get("menu_promotions?select=id,name,description,image_url,price,active&active=eq.true")]);
+const tvImages=await get("tv_product_images?select=product_key,image_url").catch(()=>[]);const tvImageFor=(key,fallback)=>tvImages.find(x=>x.product_key===key)?.image_url||fallback;
 const next=[];
 const day=controls.find(x=>x.burger_of_day===true&&x.available!==false&&x.day_price!=null&&/^0-\d+$/.test(x.product_id));
-if(day){next.push({name:day.product_name,description:ingredientsFor(day.product_id,day.description),image:imageFor(day.product_id,day.image_url),price:day.day_price,regularPrice:day.price,isDay:true,tag:"🔥 BURGER DEL DÍA"});next.push({name:day.product_name,description:ingredientsFor(day.product_id,day.description),image:imageFor(day.product_id,day.image_url),price:day.day_price,regularPrice:day.price,isDay:true,tag:"🔥 BURGER DEL DÍA"});}
-next.push(...controls.filter(x=>x.available!==false&&/^[01]-\d+$/.test(x.product_id)&&x.price!=null&&(!day||x.product_id!==day.product_id)).map(x=>({name:x.product_name,description:ingredientsFor(x.product_id,x.description),image:imageFor(x.product_id,x.image_url),price:x.price,tag:"🍔 SMASH BURGERS"})));
-next.push(...custom.filter(x=>x.available!==false&&x.category==="Hamburguesas").map(x=>({name:x.name,description:x.description,image:imageFor(null,x.image_url),price:x.price,tag:"🍔 NUESTRAS BURGERS"})));
+if(day){next.push({name:day.product_name,description:ingredientsFor(day.product_id,day.description),image:tvImageFor("original:"+day.product_id,imageFor(day.product_id,day.image_url)),price:day.day_price,regularPrice:day.price,isDay:true,tag:"🔥 BURGER DEL DÍA"});next.push({name:day.product_name,description:ingredientsFor(day.product_id,day.description),image:imageFor(day.product_id,day.image_url),price:day.day_price,regularPrice:day.price,isDay:true,tag:"🔥 BURGER DEL DÍA"});}
+next.push(...controls.filter(x=>x.available!==false&&/^[01]-\d+$/.test(x.product_id)&&x.price!=null&&(!day||x.product_id!==day.product_id)).map(x=>({name:x.product_name,description:ingredientsFor(x.product_id,x.description),image:tvImageFor("original:"+x.product_id,imageFor(x.product_id,x.image_url)),price:x.price,tag:"🍔 SMASH BURGERS"})));
+next.push(...custom.filter(x=>x.available!==false&&x.category==="Hamburguesas").map(x=>({name:x.name,description:x.description,image:tvImageFor("custom:"+x.id,imageFor(null,x.image_url)),price:x.price,tag:"🍔 NUESTRAS BURGERS"})));
 if(tvSettings.show_promotions)next.push(...promos.map(x=>({name:x.name,description:x.description,image:imageFor(null,x.image_url),price:x.price,tag:"🔥 PROMOCIONES"})));
 slides=next.filter(x=>x.name&&Number.isFinite(Number(x.price))&&Number(x.price)>=0);if(current>=slides.length)current=0;show()
 }catch(e){console.warn("La TV conservará el último menú cargado",e)}}
