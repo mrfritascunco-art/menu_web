@@ -55,4 +55,4 @@ document.addEventListener("click",e=>{const a=e.target.closest("[data-add]"),m=e
 (async()=>{try{const shared=await MFSession.get("caja");if(!shared)return;token=shared;$("login").classList.add("hidden");$("app").classList.remove("hidden");await loadCatalog()}catch(e){token="";$("login").classList.remove("hidden");$("app").classList.add("hidden")}})();
 
 MFSession.watch("caja",()=>token,()=>{token="";sessionStorage.removeItem("mf_cash_token");$("app").classList.add("hidden");$("login").classList.remove("hidden");$("loginMessage").textContent="Sesión finalizada o permisos modificados.";});
-</script></body></html>
+</script><script src="gestion-home-float.js?v=1" defer></script></body></html>
