@@ -18,4 +18,4 @@ $("createForm").onsubmit=async(e)=>{e.preventDefault();const m=$("createResult")
 $("logout").onclick=()=>{MFSession.clear();token="";$("dashboard").classList.add("hidden");$("login").classList.remove("hidden");$("message").textContent="Sesión cerrada."};
 
 MFSession.watch("admin",()=>token,()=>{token="";$("dashboard").classList.add("hidden");$("login").classList.remove("hidden");$("message").textContent="Sesión finalizada o permisos modificados.";});
-</script></body></html>
+</script><script src="gestion-home-float.js?v=1" defer></script></body></html>
