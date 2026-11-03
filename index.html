@@ -452,4 +452,22 @@ render();loadMfDeliveryRates();loadMenuPromotions();loadMenuControl().then(loadC
   if(card&&typeof card.stamps==="number")a.textContent="🍟 MIS SELLOS · "+card.stamps+" ACUMULADOS";
  }catch(e){}
 })();
-</script></body></html>
+</script>
+<style id="mf-checkout-upsell-style">#mfUpsellOverlay{position:fixed;inset:0;z-index:11000;background:#000b;display:none;align-items:flex-end;justify-content:center;padding:12px}#mfUpsellOverlay.show{display:flex}#mfUpsellPanel{width:100%;max-width:520px;max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:22px 17px;box-shadow:0 12px 40px #0005}#mfUpsellPanel h2{margin:0 0 6px;font-size:25px}#mfUpsellPanel p{color:#555;margin:0 0 16px}.mf-suggestion{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eee}.mf-suggestion img{width:65px;height:65px;object-fit:contain;border-radius:10px}.mf-suggestion div{flex:1}.mf-suggestion button{background:#ffc400;border:0;border-radius:10px;padding:12px;font-weight:900}.mf-upsell-next{display:block;width:100%;padding:16px;margin-top:16px;background:#ffc400;border:0;border-radius:13px;font-weight:900;font-size:16px}.mf-upsell-skip{display:block;width:100%;padding:13px;margin-top:8px;background:#111;color:#fff;border:0;border-radius:13px;font-weight:800}</style>
+<div id="mfUpsellOverlay" role="dialog" aria-modal="true" aria-labelledby="mfUpsellTitle"><div id="mfUpsellPanel"><h2 id="mfUpsellTitle">¿Algo más para acompañar? 😏</h2><p>Completa tu pedido con algo rico.</p><div id="mfUpsellSuggestions"></div><button type="button" class="mf-upsell-next" onclick="mfUpsellFinish()">Continuar con mi pedido</button><button type="button" class="mf-upsell-skip" onclick="mfUpsellFinish()">No, gracias. Continuar</button></div></div>
+
+<script id="mf-checkout-upsell-script">
+(function(){
+let mfUpsellSeen=false;
+const originalSend=window.sendWA;
+function keyFor(id){return Object.keys(cart).some(k=>k===id||k.startsWith(id+"|"));}
+function categoryFor(id){const n=String(cartProduct(id)[0]||"").toLowerCase();if(/bebida|coca.cola|sprite|fanta|kem|canada dry|limón soda/.test(n))return "drink";if(/papa|frita/.test(n))return "fries";if(/hamburguesa|burger|smash|whopper|oklahoma|cuarto de libra/.test(n))return "burger";return "other";}
+function suggestions(){const present=new Set(Object.keys(cart).filter(k=>cart[k]>0).map(categoryFor));const candidates=[];function offer(id,category){if(present.has(category)||menuControl[id]?.available===false||!baseProduct(id))return;const p=baseProduct(id);if(!Number.isFinite(Number(p[1])))return;candidates.push({id,category,p});present.add(category)}
+if(!present.has("fries"))offer("2-0","fries");if(!present.has("drink"))offer("4-0","drink");if(!present.has("burger"))offer("0-1","burger");return candidates.slice(0,3)}
+function render(){const list=suggestions();const target=document.getElementById("mfUpsellSuggestions");target.replaceChildren();for(const item of list){const row=document.createElement("div");row.className="mf-suggestion";const img=document.createElement("img");img.alt="";if(item.p[3])img.src=item.p[3];else img.style.display="none";const info=document.createElement("div");const title=document.createElement("b");title.textContent=item.category==="drink"?"Bebida":item.p[0];const price=document.createElement("p");price.textContent=fmt(item.p[1]);price.style.margin="5px 0 0";info.append(title,price);const btn=document.createElement("button");btn.type="button";btn.textContent="+ Agregar";btn.onclick=()=>{if(item.category==="drink"){const key="4-0";cart[key]=(cart[key]||0)+1;}else{cart[item.id]=(cart[item.id]||0)+1;}update();drawCart();render()};row.append(img,info,btn);target.append(row)}}
+window.mfUpsellFinish=function(){document.getElementById("mfUpsellOverlay").classList.remove("show");return originalSend()};
+window.sendWA=function(){if(!Object.keys(cart).length)return originalSend();if(mfUpsellSeen)return originalSend();const list=suggestions();if(!list.length)return originalSend();mfUpsellSeen=true;render();document.getElementById("mfUpsellOverlay").classList.add("show")};
+const previousCancel=window.cancelOrder;window.cancelOrder=function(){const had=Object.keys(cart).length;previousCancel();if(had&&!Object.keys(cart).length)mfUpsellSeen=false};
+})();
+</script>
+</body></html>
