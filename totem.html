@@ -48,7 +48,7 @@ function drawUpsells(){
  if(!hasBurger){const p=choose("Smash Burgers",/cheese burger/);if(p)suggestions.push(p)}
  for(const p of products.filter(p=>p.category==="Snacks"&&p.available!==false)){if(suggestions.length>=3)break;if(!inCart.includes(p.name.toLowerCase()))suggestions.push(p)}
  const shown=suggestions.slice(0,3);
- $("upsellItems").innerHTML=shown.map(p=>'<div class="upsell-card">'+(p.image?'<img src="'+safe(p.image)+'" alt="" onerror="this.style.display=\\'none\\'">':'<span style="font-size:32px">🥤</span>')+'<div class="details"><strong>'+safe(p.name)+'</strong><span>'+money(p.price)+'</span></div><button data-upsell-add="'+safe(p.id)+'">+ AGREGAR</button></div>').join("");
+ $("upsellItems").innerHTML=shown.map(p=>'<div class="upsell-card">'+(p.image?'<img src="'+safe(p.image)+'" alt="" onerror="this.style.display=&quot;none&quot;">':'<span style="font-size:32px">🥤</span>')+'<div class="details"><strong>'+safe(p.name)+'</strong><span>'+money(p.price)+'</span></div><button data-upsell-add="'+safe(p.id)+'">+ AGREGAR</button></div>').join("");
  $("upsell").style.display=shown.length?"block":"none";
 }
 
